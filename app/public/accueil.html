@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/i18n.js"></script>
+  <title>Orbe</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='5' fill='%23F2C14E'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%237FD1FF' stroke-width='2' transform='rotate(-30 16 16)'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/pages.css">
+</head>
+<body class="page">
+  <header class="page-top">
+    <a class="wordmark" href="/">Orbe</a>
+    <span id="who"></span>
+  </header>
+
+  <main class="hero">
+    <div class="hero-text">
+      <h1>Tout ce que tu sais, sur une seule carte en 3D.</h1>
+      <p class="lead">Tout part d'un point, qui se divise en Public et Privé. Tu ouvres un dossier, tu vois ce qui l'entoure et pourquoi c'est relié.</p>
+      <div class="actions">
+        <a class="big primary" href="/carte">Ouvrir Orbe</a>
+        <button class="big outline" id="login" type="button">Se connecter</button>
+        <a class="big outline" href="/ia">Connecter son IA</a>
+      </div>
+      <p class="count" id="count" hidden></p>
+    </div>
+    <svg class="orbit" viewBox="0 0 420 420" role="img" aria-label="Le point Tout relié à Public et à Privé, entourés de dossiers">
+      <g fill="none" stroke="#dce8e033">
+        <ellipse cx="210" cy="210" rx="190" ry="72" transform="rotate(-24 210 210)"/>
+        <ellipse cx="210" cy="210" rx="150" ry="150"/>
+        <ellipse cx="210" cy="210" rx="190" ry="72" transform="rotate(38 210 210)"/>
+      </g>
+      <g stroke="#e0b76888" stroke-width="1.5">
+        <line x1="210" y1="210" x2="82" y2="130"/><line x1="210" y1="210" x2="338" y2="290"/>
+        <line x1="82" y1="130" x2="52" y2="232"/><line x1="82" y1="130" x2="170" y2="52"/>
+        <line x1="338" y1="290" x2="368" y2="188"/><line x1="338" y1="290" x2="250" y2="368"/>
+      </g>
+      <g class="spin">
+        <circle cx="360" cy="210" r="5" fill="#7fd1ff"/><circle cx="60" cy="210" r="3.5" fill="#dce8e0"/>
+      </g>
+      <circle cx="52" cy="232" r="6" fill="#dce8e0"/><circle cx="170" cy="52" r="6" fill="#dce8e0"/>
+      <circle cx="368" cy="188" r="6" fill="#dce8e0"/><circle cx="250" cy="368" r="6" fill="#dce8e0"/>
+      <circle cx="82" cy="130" r="15" fill="#7fd1ff"/><circle cx="338" cy="290" r="15" fill="#e0b768"/>
+      <circle cx="210" cy="210" r="25" fill="#f2c14e"/>
+      <g fill="#e9efdf" text-anchor="middle" font-size="17">
+        <text x="210" y="256">Tout</text><text x="82" y="105">Public</text><text x="338" y="330">Privé</text>
+      </g>
+    </svg>
+  </main>
+
+  <section class="facts">
+    <div>
+      <h2>Public</h2>
+      <p>L'univers jusqu'aux astéroïdes et comètes de la NASA, les pays et leurs villes, Wikipédia, les jeux, les logiciels. Chaque point a sa page explicative et ses sources.</p>
+    </div>
+    <div>
+      <h2>Privé</h2>
+      <p>Tes fichiers, tes notes et tes projets, dans une base chiffrée sur ton PC. Rien ne passe en public sans que tu le demandes et qu'une personne le valide.</p>
+    </div>
+    <div>
+      <h2>Tes IA</h2>
+      <p>Connecte une IA pour qu'elle range dans ta carte, ou pour qu'elle vérifie une information proposée. Tu choisis laquelle, et tu vois ce qu'elle peut faire.</p>
+    </div>
+  </section>
+
+  <footer class="page-foot">Orbe est encore en développement : sa sécurité n'a pas été auditée, et la version publique n'est pas en ligne.</footer>
+  <dialog id="dialog"></dialog>
+  <script type="module" src="/accueil.js"></script>
+</body>
+</html>

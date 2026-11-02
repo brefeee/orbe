@@ -1,0 +1,14 @@
+*.db
+*.db.bak
+*.key
+orbe*.json
+!app/public_seed.json
+__pycache__/
+atlas/
+dist/
+export/
+cache/
+.node/
+.build/
+.work/
+imports/
