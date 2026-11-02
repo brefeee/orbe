@@ -21,7 +21,7 @@ from orbe_db import open_store
 import orbe_relay
 from orbe_files import refresh_if_old
 from orbe_gaia import TOTAL as GAIA_TOTAL
-from orbe_remote import fetch_atlas, remote_stats
+from orbe_remote import fetch_atlas, full_status, remote_stats, start_full_install
 from orbe_store import Store, StoreError, atlas_search
 
 HERE = Path(__file__).resolve().parent
@@ -173,6 +173,8 @@ class Handler(BaseHTTPRequestHandler):
     def _get(self, path: str):
         if path == "/api/graph":
             self._json(self.store.load())
+        elif path == "/api/atlas-full":
+            self._json(full_status((HERE / "atlas" / "geo.json").is_file()))
         elif path == "/api/stats":
             self._json(knowledge_stats(self.store))
         elif path == "/api/relay" and hasattr(self.store, "relay_config"):
@@ -205,6 +207,9 @@ class Handler(BaseHTTPRequestHandler):
     def _write(self, method: str, path: str):
         s = self.store
         body = self._body() if method in ("POST", "PATCH") else {}
+        if method == "POST" and path == "/api/atlas-full":
+            self._json(start_full_install())
+            return
         if method == "POST" and path == "/api/files/reveal" and hasattr(self.store, "file_known"):
             target = str(body.get("path") or "")
             if not self.store.file_known(target) or not os.path.exists(target):
@@ -318,6 +323,81 @@ class Handler(BaseHTTPRequestHandler):
             time.sleep(0.4)
 
 
+def brand_window(icon: Path, tries: int = 60) -> None:
+    """Donne à la fenêtre d'Orbe son icône et sa propre place dans la barre des tâches, à la place de celles d'Edge."""
+    import ctypes
+    import time
+    from ctypes import wintypes
+    user32, shell32, ole32 = ctypes.windll.user32, ctypes.windll.shell32, ctypes.windll.ole32
+
+    class GUID(ctypes.Structure):
+        _fields_ = [("a", wintypes.DWORD), ("b", wintypes.WORD), ("c", wintypes.WORD), ("d", ctypes.c_ubyte * 8)]
+
+    class PropKey(ctypes.Structure):
+        _fields_ = [("fmtid", GUID), ("pid", wintypes.DWORD)]
+
+    class PropVariant(ctypes.Structure):
+        _fields_ = [("vt", wintypes.WORD), ("r1", wintypes.WORD), ("r2", wintypes.WORD), ("r3", wintypes.WORD), ("value", ctypes.c_void_p), ("pad", ctypes.c_void_p)]
+
+    def guid(a, b, c, *d):
+        return GUID(a, b, c, (ctypes.c_ubyte * 8)(*d))
+
+    store_iid = guid(0x886D8EEB, 0x8CF2, 0x4446, 0x8D, 0x02, 0xCD, 0xBA, 0x1D, 0xBD, 0xCF, 0x99)
+    model = guid(0x9F4C2855, 0x9F79, 0x4B39, 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3)
+    shell32.SHGetPropertyStoreForWindow.argtypes = [wintypes.HWND, ctypes.POINTER(GUID), ctypes.POINTER(ctypes.c_void_p)]
+    user32.SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    user32.SendMessageW.restype = ctypes.c_ssize_t
+    user32.LoadImageW.restype = wintypes.HANDLE
+    user32.LoadImageW.argtypes = [wintypes.HINSTANCE, wintypes.LPCWSTR, wintypes.UINT, ctypes.c_int, ctypes.c_int, wintypes.UINT]
+    user32.GetWindowTextW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+    user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
+    finder = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+    def windows():
+        found = []
+
+        def visit(hwnd, _):
+            title, kind = ctypes.create_unicode_buffer(64), ctypes.create_unicode_buffer(64)
+            user32.GetWindowTextW(hwnd, title, 64)
+            user32.GetClassNameW(hwnd, kind, 64)
+            if title.value == "Orbe" and kind.value == "Chrome_WidgetWin_1" and user32.IsWindowVisible(hwnd):
+                found.append(hwnd)
+            return True
+        user32.EnumWindows(finder(visit), 0)
+        return found
+
+    def set_props(hwnd):
+        store = ctypes.c_void_p()
+        if shell32.SHGetPropertyStoreForWindow(hwnd, ctypes.byref(store_iid), ctypes.byref(store)) != 0:
+            return
+        table = ctypes.cast(ctypes.cast(store, ctypes.POINTER(ctypes.c_void_p)).contents, ctypes.POINTER(ctypes.c_void_p))
+        set_value = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p, ctypes.POINTER(PropKey), ctypes.POINTER(PropVariant))(table[6])
+        commit = ctypes.WINFUNCTYPE(ctypes.HRESULT, ctypes.c_void_p)(table[7])
+        release = ctypes.WINFUNCTYPE(wintypes.ULONG, ctypes.c_void_p)(table[2])
+        launcher = Path(os.environ.get("LOCALAPPDATA") or Path.home()) / "Orbe" / "Orbe.exe"
+        values = {5: "brefeee.Orbe", 3: f"{icon},0", 4: "Orbe"}
+        if launcher.exists():
+            values[2] = f'"{launcher}"'
+        for pid, text in values.items():
+            holder = ctypes.create_unicode_buffer(text)
+            value = PropVariant(vt=31, value=ctypes.cast(holder, ctypes.c_void_p))
+            set_value(store, ctypes.byref(PropKey(model, pid)), ctypes.byref(value))
+        commit(store)
+        release(store)
+
+    ole32.CoInitialize(None)
+    big, small = (user32.LoadImageW(None, str(icon), 1, s, s, 0x10) for s in (256, 32))
+    done = set()
+    for _ in range(tries):
+        for hwnd in windows():
+            if hwnd not in done:
+                set_props(hwnd)
+                done.add(hwnd)
+            user32.SendMessageW(hwnd, 0x80, 1, big or 0)  # Chromium remet parfois son icône au chargement
+            user32.SendMessageW(hwnd, 0x80, 0, small or 0)
+        time.sleep(0.5)
+
+
 def open_window(url: str) -> None:
     """Ouvre Orbe dans sa propre fenêtre avec Edge si possible, sinon dans le navigateur."""
     if sys.platform == "win32":
@@ -327,10 +407,15 @@ def open_window(url: str) -> None:
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key) as handle:
                 edge = winreg.QueryValue(handle, None)
             subprocess.Popen([edge, f"--app={url}"])
+            threading.Thread(target=brand_window, args=(HERE / "public" / "logo.ico",), daemon=True).start()
             return
         except OSError:
             pass
     webbrowser.open(url)
+
+
+class OrbeServer(ThreadingHTTPServer):
+    allow_reuse_address = False  # sous Windows, True laisserait plusieurs Orbe écouter le même port
 
 
 def main():
@@ -344,7 +429,7 @@ def main():
     url = f"http://127.0.0.1:{args.port}"
     handler = type("BoundHandler", (Handler,), {"store": store, "port": args.port})
     try:
-        server = ThreadingHTTPServer(("127.0.0.1", args.port), handler)
+        server = OrbeServer(("127.0.0.1", args.port), handler)
     except OSError:
         if args.open:  # Orbe tourne déjà : on rouvre simplement la fenêtre
             open_window(url)

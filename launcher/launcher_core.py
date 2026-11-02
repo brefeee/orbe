@@ -59,6 +59,12 @@ def save_settings(settings: dict) -> None:
     (home() / "settings.json").write_text(json.dumps(settings), encoding="utf-8")
 
 
+def _newer(version: str, than: str | None) -> bool:
+    def parts(text):
+        return [int(p) for p in re.findall(r"\d+", text)]
+    return than is None or parts(version) > parts(than)
+
+
 def installed_version() -> str | None:
     try:
         version = (home() / "current.txt").read_text(encoding="utf-8").strip()
@@ -80,7 +86,7 @@ def fetch_manifest() -> dict:
         raise LauncherError(f"Impossible de lire les mises à jour : {err}") from err
     if not re.fullmatch(r"[0-9A-Za-z.\-]{1,40}", version) or ".." in version or not re.fullmatch(r"[0-9a-f]{64}", sha) or not 0 < size <= MAX_PACKAGE:
         raise LauncherError("Le fichier de mise à jour est invalide.")
-    return {"version": version, "sha256": sha, "size": size, "url": _safe_url(package)}
+    return {"version": version, "sha256": sha, "size": size, "url": _safe_url(package), "atlas": str(data.get("atlas") or "").rstrip("/")}
 
 
 def _extract(archive: Path, target: Path) -> None:
@@ -99,6 +105,21 @@ def _point_current(version_dir: Path) -> None:
         os.rmdir(link)
     subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(version_dir)], check=True, stdout=subprocess.DEVNULL,
                    creationflags=subprocess.CREATE_NO_WINDOW)
+
+
+def _unlink_atlas(version_dir: Path) -> None:
+    """Retire le lien vers l'atlas local sans jamais toucher à ce qu'il désigne."""
+    link = version_dir / "app" / "atlas"
+    if os.path.isjunction(link):
+        os.rmdir(link)
+
+
+def _link_local_atlas(version_dir: Path) -> None:
+    """Sur un PC qui a déjà tout l'atlas, la nouvelle version s'en sert au lieu de le retélécharger."""
+    source = Path.home() / ".orbe" / "app" / "atlas"
+    if (source / "geo.json").is_file() and not (version_dir / "app" / "atlas").exists():
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(version_dir / "app" / "atlas"), str(source)], check=False, stdout=subprocess.DEVNULL,
+                       creationflags=subprocess.CREATE_NO_WINDOW)
 
 
 def install(manifest: dict, progress=lambda done, total: None) -> None:
@@ -137,6 +158,7 @@ def install(manifest: dict, progress=lambda done, total: None) -> None:
         temp = root / "current.tmp"
         temp.write_text(manifest["version"], encoding="utf-8")
         os.replace(temp, root / "current.txt")
+        _link_local_atlas(final)
         _point_current(final)
     finally:
         download.unlink(missing_ok=True)
@@ -144,6 +166,7 @@ def install(manifest: dict, progress=lambda done, total: None) -> None:
     # Une ancienne version encore ouverte sera retirée au prochain passage.
     for old in versions.iterdir():
         if old.name != manifest["version"]:
+            _unlink_atlas(old)
             shutil.rmtree(old, ignore_errors=True)
 
 
@@ -151,11 +174,79 @@ def update_if_needed(progress=lambda done, total: None) -> tuple[str | None, str
     """Renvoie la version utilisable et l'éventuelle erreur : sans réseau, la version installée reste lançable."""
     try:
         manifest = fetch_manifest()
-        if manifest["version"] != installed_version():
+        if _newer(manifest["version"], installed_version()):
             install(manifest, progress)
         return installed_version(), None
     except LauncherError as err:
         return installed_version(), str(err)
+
+
+def _read_json(url: str):
+    with urlopen(_safe_url(url), timeout=TIMEOUT) as res:
+        return json.loads(res.read(8 << 20))
+
+
+def atlas_base() -> str:
+    """L'adresse de l'atlas en ligne est à côté de celle du fichier de mise à jour, ou dans le manifeste."""
+    return load_settings().get("atlas", "")
+
+
+def remember_atlas() -> None:
+    settings = load_settings()
+    try:
+        manifest = fetch_manifest()
+        if manifest["atlas"]:
+            settings["atlas"] = manifest["atlas"]
+            settings["stats"] = _read_json(manifest["atlas"] + "/stats.json")
+            save_settings(settings)
+    except (LauncherError, OSError, ValueError):
+        pass
+
+
+def full_dir() -> Path:
+    env = os.environ.get("ORBE_CACHE")
+    return (Path(env).parent if env else Path.home() / ".orbe") / "atlas-complet"
+
+
+def has_local_atlas() -> bool:
+    return (Path.home() / ".orbe" / "app" / "atlas" / "geo.json").is_file() or (full_dir() / "complet.txt").exists()
+
+
+def full_list() -> dict | None:
+    base = atlas_base()
+    if not base:
+        return None
+    try:
+        data = _read_json(base + "/files.json")
+    except (LauncherError, OSError, ValueError):
+        return None
+    return data if isinstance(data.get("files"), list) else None
+
+
+def install_full(data: dict, progress=lambda done, total: None) -> None:
+    """Installe tout l'atlas, sans retélécharger ce qui est déjà là. À relancer sans danger après une coupure."""
+    target, base, done = full_dir(), atlas_base(), 0
+    if shutil.disk_usage(target.parent if target.parent.exists() else Path.home()).free < data["size"] + 1024 ** 3:
+        raise LauncherError("Pas assez de place sur le disque.")
+    try:
+        for relative, size in data["files"]:
+            path = (target / relative).resolve()
+            if not path.is_relative_to(target.resolve()):
+                raise LauncherError("Chemin refusé.")
+            if not (path.is_file() and path.stat().st_size == size):
+                with urlopen(_safe_url(base + "/" + relative), timeout=60) as res:
+                    body = res.read()
+                if len(body) != size:
+                    raise LauncherError(f"Fichier incomplet : {relative}")
+                path.parent.mkdir(parents=True, exist_ok=True)
+                temp = path.with_name(path.name + ".tmp")
+                temp.write_bytes(body)
+                os.replace(temp, path)
+            done += size
+            progress(done, data["size"])
+    except OSError as err:
+        raise LauncherError(f"Téléchargement impossible : {err}") from err
+    (target / "complet.txt").write_text(str(data.get("version", "")), encoding="utf-8")
 
 
 def launch(version: str, lang: str = "fr") -> subprocess.Popen:

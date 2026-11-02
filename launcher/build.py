@@ -17,6 +17,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ORBE = HERE.parent
 EMBED = HERE / "cache" / "python-3.14.0-embed-amd64.zip"
+LOGO = ORBE / "app" / "public"
 SKIP_DIRS = {"atlas", "__pycache__"}
 SKIP_FILES = {"import_atlas.py", "atlas_url.txt"}
 
@@ -46,7 +47,7 @@ def build_package(version: str, atlas_url: str | None, dist: Path) -> Path:
             out.writestr("app/atlas_url.txt", atlas_url)
     data = target.read_bytes()
     (dist / "manifest.json").write_text(json.dumps({
-        "version": version, "url": target.name, "sha256": hashlib.sha256(data).hexdigest(), "size": len(data)}), encoding="utf-8")
+        "version": version, "url": target.name, "sha256": hashlib.sha256(data).hexdigest(), "size": len(data), "atlas": atlas_url or ""}), encoding="utf-8")
     return target
 
 
@@ -56,6 +57,7 @@ def build_launcher(url: str | None, dist: Path) -> Path:
         config.write_text(url or "", encoding="utf-8")
         subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--onefile", "--windowed", "--name", "Orbe",
                         "--distpath", str(dist), "--workpath", str(HERE / ".work"), "--specpath", str(HERE / ".work"),
+                        "--icon", str(LOGO / "logo.ico"), "--add-data", f"{LOGO / 'logo.ico'};.", "--add-data", f"{LOGO / 'logo.png'};.",
                         "--add-data", f"{config};.", str(HERE / "launcher.py")], check=True, cwd=HERE)
     return dist / "Orbe.exe"
 

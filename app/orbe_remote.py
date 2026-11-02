@@ -13,6 +13,7 @@ import shutil
 import tempfile
 import threading
 import zlib
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import urlsplit
@@ -47,7 +48,14 @@ def cache_dir() -> Path:
     return Path(env) if env else Path.home() / ".orbe" / "cache-atlas"
 
 
+def full_dir() -> Path:
+    """L'atlas complet installé par « Tout voir » : il n'est jamais vidé par la limite du cache."""
+    return cache_dir().parent / "atlas-complet"
+
+
 def _get(path: str, timeout: int = TIMEOUT) -> bytes | None:
+    if path.startswith(("atlas/", "wc/", "search/")) and (full_dir() / path).is_file():
+        return (full_dir() / path).read_bytes()
     base = remote_url()
     if not base:
         return None
@@ -214,6 +222,73 @@ def remote_search(wanted: str, limit: int = 40) -> list:
                 if len(results) >= limit:
                     return results
     return results
+
+
+_full = {"running": False, "done": 0, "error": None}
+_full_lock = threading.Lock()
+
+
+def _full_list() -> dict | None:
+    body = _get("files.json")
+    try:
+        data = json.loads(body) if body else None
+        return data if data and isinstance(data.get("files"), list) else None
+    except ValueError:
+        return None
+
+
+def full_status(local: bool = False) -> dict:
+    """État de l'atlas complet. local : tout est déjà sur ce PC, il n'y a rien à installer."""
+    data = None if local else _full_list()
+    mark = full_dir() / "complet.txt"
+    complete = local or mark.exists()
+    return {"available": bool(data), "complete": complete, "size": data["size"] if data else 0, "done": _full["done"],
+            "running": _full["running"], "error": _full["error"], "free": shutil.disk_usage(cache_dir().parent).free}
+
+
+def _full_worker(data: dict) -> None:
+    target = full_dir()
+    try:
+        if shutil.disk_usage(target.parent).free < data["size"] + 1024 ** 3:
+            raise OSError("Pas assez de place sur le disque.")
+
+        def one(item):
+            relative, size = item
+            path = (target / relative).resolve()
+            if not path.is_relative_to(target.resolve()):
+                raise OSError("Chemin refusé.")
+            if not (path.is_file() and path.stat().st_size == size):  # ce qui est déjà installé n'est pas retéléchargé
+                with urlopen(remote_url() + "/" + relative, timeout=60) as res:
+                    body = res.read(MAX_RESPONSE + 1)
+                if len(body) != size:
+                    raise OSError(f"Fichier incomplet : {relative}")
+                path.parent.mkdir(parents=True, exist_ok=True)
+                temp = path.with_name(path.name + ".tmp")
+                temp.write_bytes(body)
+                os.replace(temp, path)
+            with _full_lock:
+                _full["done"] += size
+
+        with ThreadPoolExecutor(6) as pool:
+            list(pool.map(one, data["files"]))
+        (target / "complet.txt").write_text(str(data.get("version", "")), encoding="utf-8")
+    except (OSError, ValueError) as err:
+        _full["error"] = str(err)
+    finally:
+        _full["running"] = False
+
+
+def start_full_install() -> dict:
+    with _full_lock:
+        if _full["running"]:
+            return full_status()
+        data = _full_list()
+        if not data:
+            return {**full_status(), "error": "L'atlas complet n'est pas disponible pour le moment."}
+        full_dir().mkdir(parents=True, exist_ok=True)
+        _full.update(running=True, done=0, error=None)
+    threading.Thread(target=_full_worker, args=(data,), daemon=True).start()
+    return full_status()
 
 
 def remote_stats() -> dict:

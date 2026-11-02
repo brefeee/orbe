@@ -42,6 +42,7 @@
     ['Touche 2', 'Key 2', 'Tecla 2'],
     ['Dossier', 'Folder', 'Carpeta'],
     ['Vue large', 'Wide view', 'Vista amplia'],
+    ['Tout voir', 'See everything', 'Ver todo'],
     ['Chercher dans la carte', 'Search the map', 'Buscar en el mapa'],
     ['Orbe a besoin de WebGL pour afficher la carte en 3D. Active l\'accélération matérielle dans les réglages du navigateur, puis recharge la page.', 'Orbe needs WebGL to show the 3D map. Turn on hardware acceleration in your browser settings, then reload the page.', 'Orbe necesita WebGL para mostrar el mapa en 3D. Activa la aceleración por hardware en los ajustes del navegador y recarga la página.'],
     ['Ouvrir la carte', 'Open the map', 'Abrir el mapa'],

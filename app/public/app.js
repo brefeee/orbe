@@ -106,6 +106,62 @@ function pageLink(atlas, name) {
   return [];
 }
 
+// Prépare en arrière-plan ce qui suit dans la hiérarchie : le serveur le garde, rien n'est affiché ni rechargé deux fois.
+const PREPARE_LIMIT = 300;
+let prepareRun = 0;
+const prepared = new Set();
+async function prepareBelow(keys, deep) {
+  const run = ++prepareRun;
+  const queue = keys.filter(Boolean);
+  let budget = PREPARE_LIMIT;
+  const worker = async () => {
+    while (run === prepareRun && queue.length && budget > 0) {
+      const key = queue.shift();
+      if (prepared.has(key)) continue;
+      prepared.add(key);
+      budget--;
+      const res = await fetch('/api/atlas/' + key + '?v=3').catch(() => null);
+      if (!res?.ok) { prepared.delete(key); continue; }
+      const { nodes = [] } = await res.json().catch(() => ({}));
+      if (deep) queue.push(...nodes.map(n => n.a).filter(Boolean));
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+}
+
+const sizeText = bytes => bytes >= 1024 ** 3 ? (bytes / 1024 ** 3).toFixed(1).replace('.', ',') + ' Go' : Math.ceil(bytes / 1024 ** 2) + ' Mo';
+
+// « Tout voir » a besoin de tout l'atlas : l'installation demande d'abord une confirmation, avec sa taille.
+async function seeEverything() {
+  const full = await fetch('/api/atlas-full').then(r => r.json()).catch(() => null);
+  if (!full) return toast('Impossible de vérifier l’atlas.', { bad: true });
+  if (full.complete) return select(state.selectedId, 'large');
+  if (full.running) return followInstall();
+  if (!full.available) return toast('L’atlas complet n’est pas disponible pour le moment. Vérifie ta connexion.', { bad: true });
+  if (full.free < full.size) return toast(`Il faut ${sizeText(full.size)} libres, il en reste ${sizeText(full.free)}.`, { bad: true });
+  confirmDialog('Installer tout l’atlas ?', `« Tout voir » a besoin de tout l’atlas : ${sizeText(full.size)} seront téléchargés et installés sur ce PC. Tu peux continuer à naviguer pendant ce temps.`, `Installer ${sizeText(full.size)}`, async () => {
+    await api('POST', '/api/atlas-full', {});
+    followInstall();
+  });
+}
+
+let installTimer = null;
+function followInstall() {
+  clearInterval(installTimer);
+  installTimer = setInterval(async () => {
+    const full = await fetch('/api/atlas-full').then(r => r.json()).catch(() => null);
+    if (!full) return;
+    if (!full.running) {
+      clearInterval(installTimer);
+      if (full.error) toast(full.error, { bad: true });
+      else if (full.complete) { toast('Tout l’atlas est installé.'); select(state.selectedId, 'large'); }
+      return;
+    }
+    toast(`Installation de l’atlas : ${Math.floor(full.done * 100 / (full.size || 1))} %`);
+  }, 15000);
+  toast('Installation de l’atlas lancée, en arrière-plan.');
+}
+
 // Charge le contenu d'un dossier de l'atlas : il rejoint la carte en mémoire, sans jamais être enregistré.
 async function loadAtlas(id, quiet = false) {
   const node = state.idx.byId.get(id);
@@ -125,8 +181,28 @@ async function loadAtlas(id, quiet = false) {
   if (!quiet) scene?.setData(state.idx, true);
 }
 
+// La base importée n'a pas de dossiers : chaque résultat devient une fiche, rangée près de son sujet.
+function openImportedResult(result) {
+  const place = result.path.startsWith('Lieux');
+  const anchor = state.graph.nodes.find(n => place ? n.atlas === 'geo' : n.name === 'Littérature') || state.graph.nodes.find(n => !n.parentId);
+  const id = anchor.id + '>' + result.id;
+  if (!state.idx.byId.has(id)) {
+    const query = encodeURIComponent(result.name);
+    const texts = [
+      'Classement : ' + result.path + '.',
+      place ? 'Source : GeoNames, licence CC BY 4.0. https://www.geonames.org/search.html?q=' + query : 'Source : Open Library. https://openlibrary.org/search?q=' + query,
+    ];
+    state.virtual.push({ id, name: result.name, parentId: anchor.id, atlas: null, prefix: anchor.id, virtual: true, color: null, author: 'atlas', createdAt: '',
+      entries: texts.map((text, i) => ({ id: result.id + '-' + i, text, author: 'atlas', createdAt: '' })) });
+    rebuild();
+    scene?.setData(state.idx, true);
+  }
+  return select(id);
+}
+
 async function openAtlasResult(result) {
   try {
+    if (result.chain[0] === 'import') { await openImportedResult(result); return; }
     const anchor = state.graph.nodes.find(n => n.atlas === result.chain[0]);
     if (!anchor) throw new Error('Ce dossier n’est pas accessible dans cet espace.');
     let current = anchor;
@@ -153,6 +229,8 @@ async function openAtlasResult(result) {
     }
     if (!state.idx.byId.has(target)) throw new Error('Cet article est introuvable dans l\u2019atlas.');
     await select(target);
+    // La recherche prépare tous les descendants du point trouvé, pas ses voisins.
+    prepareBelow([state.idx.byId.get(target)?.atlas, ...state.idx.children.get(target).map(n => n.atlas)], true);
   } catch (err) { toast(err.message, { bad: true }); }
 }
 
@@ -214,6 +292,7 @@ let arriveTimer = null;
 async function select(id, mode = state.mode, fromHistory = false) {
   if (!state.idx.byId.has(id)) return;
   await loadAtlas(id).catch(err => toast(err.message, { bad: true }));
+  prepareBelow(state.idx.children.get(id).map(n => n.atlas), false);
   // La vue large montre aussi le niveau suivant : les régions d'un pays, par exemple.
   if (mode === 'large') {
     await Promise.all(state.idx.children.get(id).filter(n => n.atlas).slice(0, 40).map(kid => loadAtlas(kid.id, true).catch(() => {})));
@@ -690,7 +769,7 @@ async function start() {
   showSound();
   soundBtn.addEventListener('click', () => { sfx.toggle(); showSound(); });
   $('view-focus').addEventListener('click', () => select(state.selectedId, 'focus'));
-  $('view-large').addEventListener('click', () => select(state.selectedId, 'large'));
+  $('view-large').addEventListener('click', seeEverything);
   $('back').addEventListener('click', () => history.back());
   $('search').addEventListener('input', renderSearch);
   $('search').addEventListener('keydown', e => {
@@ -703,7 +782,7 @@ async function start() {
   document.addEventListener('keydown', e => {
     if (typing(e.target)) return;
     if (e.key === '1') select(state.selectedId, 'focus');
-    if (e.key === '2') select(state.selectedId, 'large');
+    if (e.key === '2') seeEverything();
     if (e.key === '/') { e.preventDefault(); $('search').focus(); }
     if (e.key === 'Escape') {
       const parent = state.idx?.byId.get(state.selectedId)?.parentId;
