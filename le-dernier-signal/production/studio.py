@@ -268,14 +268,16 @@ def subtitle(img, txt):
 
 
 # ------------------------------------------------------------------ voix
+# Voix neuronales françaises (Piper, modèles hors ligne dans /opt/voix).
+# personnage: (modèle, durée des phonèmes, décalage de hauteur en demi-tons, traitement)
+VOICE_DIR = '/opt/voix'
 VOICES = {
-    # personnage: (voix MBROLA, vitesse mots/min, hauteur 0-99)
-    'nathan': ('mb-fr1', 158, 48),
-    'futur': ('mb-fr1', 140, 30),
-    'elise': ('mb-fr2', 160, 55),
-    'maya': ('mb-fr4', 122, 34),
-    'radio': ('mb-fr6', 165, 50),
-    'gabriel': ('mb-fr6', 132, 28),
+    'nathan': ('fr-gilles-low', 1.12, 0.0, None),
+    'futur': ('fr-gilles-low', 1.2, -1.5, 'radio'),
+    'elise': ('fr-siwis-medium', 1.05, 0.0, None),
+    'maya': ('fr-siwis-low', 1.18, -2.5, 'warm'),
+    'radio': ('fr-gilles-low', 0.90, 1.0, 'radio'),
+    'gabriel': ('fr-gilles-low', 1.15, -3.5, None),
 }
 
 
@@ -292,13 +294,19 @@ def read_wav(fn):
 
 
 def tts(who, text, outdir, speed_mult=1.0):
-    v, sp, pitch = VOICES[who]
-    fn = os.path.join(outdir, f'{who}_{abs(hash((text, speed_mult))) % 10**10}.wav')
+    model, ls, semi, _ = VOICES[who]
+    fn = os.path.join(outdir, f'{who}_{abs(hash((text, speed_mult, model, ls, semi))) % 10**10}.wav')
     if not os.path.exists(fn):
-        clean = text.replace('…', ',').replace('—', '').replace('«', '').replace('»', '')
-        subprocess.run(['espeak-ng', '-v', v, '-s', str(int(sp * speed_mult)), '-p', str(pitch), '-w', fn, clean],
-                       check=True, stderr=subprocess.DEVNULL)
-    return read_wav(fn)
+        clean = text.replace('…', ',').replace('—', '').replace('«', '').replace('»', '').strip(' ,')
+        raw = fn + '.raw.wav'
+        subprocess.run(['python3', '-m', 'piper', '-m', f'{VOICE_DIR}/{model}/{model}.onnx', '-f', raw,
+                        '--length-scale', str(round(ls / speed_mult, 3)), '--noise-scale', '0.6', '--noise-w-scale', '0.75'],
+                       input=clean.encode(), check=True, stderr=subprocess.DEVNULL)
+        af = f'rubberband=pitch={2 ** (semi / 12):.5f}:formant=preserved,' if semi else ''
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af', af + f'aresample={SR}', '-ac', '1', fn], check=True)
+        os.remove(raw)
+    x = read_wav(fn)
+    return x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.1   # niveau de dialogue constant (-20 dBFS RMS)
 
 
 # ------------------------------------------------------------------ audio
@@ -351,6 +359,8 @@ class Mix:
     def __init__(self, dur):
         self.n = int(dur * SR)
         self.bus = {k: np.zeros(self.n, np.float32) for k in ('amb', 'fx', 'mus', 'dia')}
+        # niveaux relatifs au dialogue : l'ambiance reste un fond, jamais au premier plan
+        self.amb_gain, self.fx_gain, self.mus_gain = 0.16, 0.45, 0.7
 
     def add(self, bus, x, t, gain=1.0):
         i = int(t * SR)
@@ -366,13 +376,16 @@ class Mix:
             env = np.abs(dia)
             k = int(0.25 * SR)
             env = np.convolve(env, np.ones(k) / k, 'same')
-            duck = 1 - 0.45 * np.clip(env / 0.03, 0, 1)
+            duck = 1 - 0.7 * np.clip(env / 0.02, 0, 1)
         else:
             duck = 1
-        out = self.bus['amb'] * duck + self.bus['fx'] + self.bus['mus'] * duck + dia
+        out = self.bus['amb'] * duck * self.amb_gain + self.bus['fx'] * self.fx_gain + self.bus['mus'] * duck * self.mus_gain + dia
         out = fft_filter(out, lo=30, hi=11000)
-        peak = np.abs(out).max()
-        out = out / max(peak, 1e-6) * 0.89  # crête -1 dB
+        # normalisation sur le dialogue (pas sur la pluie) puis limiteur doux
+        d = dia[np.abs(dia) > 1e-4]
+        ref = np.sqrt(np.mean(d ** 2)) if len(d) else 0.1
+        out = out * (0.16 / ref)
+        out = np.tanh(out / 0.89) * 0.89  # crête -1 dB
         return out
 
     @staticmethod
@@ -416,7 +429,9 @@ class Timeline:
                     p[3] -= over * r / room
                 total = length
                 break
-            speed *= 1.06
+            if speed >= 1.08:
+                raise ValueError(f'séquence {start}+{length}s trop courte pour ses dialogues ({total:.1f}s nécessaires)')
+            speed *= 1.04
         extra = length - sum(p[3] for p in plans)
         flex = sum(p[0].get('flex', 1) * p[0]['min'] for p in plans) or 1
         t = start

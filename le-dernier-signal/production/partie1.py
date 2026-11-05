@@ -19,14 +19,15 @@ tl = Timeline(VOX)
 B = lambda shot, mn, lines=(), **kw: dict(shot=shot, min=mn, lines=list(lines), **kw)
 
 # 1.1 Ouverture
-tl.sequence(0, 35, [B('black', 8, flex=0), B('city', 16), B('roof', 11)])
+SPEEDS = []
+SPEEDS.append(tl.sequence(0, 31, [B('black', 6, flex=0), B('city', 16), B('roof', 11)]))
 # 1.2 Le Signal
-tl.sequence(35, 90, [
+SPEEDS.append(tl.sequence(31, 86, [
     B('tower', 8), B('studio_wide', 12), B('mug', 5), B('phone_sms', 18),
     B('waterfall', 12), B('clock', 6, flex=0), B('flash', 6, flex=0), B('message', 10),
-    B('cable', 8, [('nathan', 'Ok.')], lead=5.5), B('erase', 5)])
+    B('cable', 8, [('nathan', 'Ok.')], lead=5.5), B('erase', 5)]))
 # 1.3 La vidéo
-tl.sequence(125, 90, [
+SPEEDS.append(tl.sequence(117, 94, [
     B('vid', 10, [('futur', 'Ça tourne ?'), ('futur', 'Ok.')], lead=3.0),
     B('vid', 23, [('futur', 'Salut.'), ('futur', "J'sais pas par où commencer. Je l'ai fait tellement de fois que j'aurais dû trouver, depuis."),
                   ('futur', "Tu es dans ta chambre. Il est deux heures dix-sept. Tu viens de débrancher le câble réseau…")]),
@@ -36,14 +37,14 @@ tl.sequence(125, 90, [
     B('vid', 17, [('futur', "Écoute-moi. Il y a des choses que tu vas avoir envie de croire. Des choses qui vont ressembler à des réponses. Sur maman. Sur toi."),
                   ('futur', 'Nathan. Quoi que tu fasses, ne fais pas confiance à MAYA.')], kw={'close': True}),
     B('vid', 5, [('futur', 'Et Élise… elle')], lead=0.6, kw={'glitch': True, 'close': True}, flex=0),
-    B('react_scar', 8)])
+    B('react_scar', 8)]))
 # 1.4 Titre
-tl.sequence(215, 20, [B('title', 20)])
+SPEEDS.append(tl.sequence(211, 18, [B('title', 18)]))
 # 1.5 Aube
-tl.sequence(235, 40, [B('dawn', 8), B('player', 7), B('notebook', 7), B('search', 7),
-                      B('photo', 11, [('nathan', 'Sur maman.')], lead=6.0)])
+SPEEDS.append(tl.sequence(229, 34, [B('dawn', 6), B('player', 6), B('notebook', 6), B('search', 6),
+                      B('photo', 11, [('nathan', 'Sur maman.')], lead=6.0)]))
 # 1.6 Élise
-tl.sequence(275, 140, [
+SPEEDS.append(tl.sequence(263, 160, [
     B('door', 12, [('elise', "Tu ressembles à un fond d'écran Windows planté."), ('elise', 'Trois jours, Nathan.'), ('nathan', 'Je sais. Entre.')], lead=1.5),
     B('talk', 8, [('elise', "Ok. Qu'est-ce qui se passe ?"), ('nathan', 'Assieds-toi. Regarde. Dis rien avant la fin.')], kw={'bg': 'day'}),
     B('watch', 8),
@@ -64,32 +65,33 @@ tl.sequence(275, 140, [
     B('map', 6),
     B('talk', 10, [('elise', "Orphée. C'est le bâtiment fermé derrière le dépôt de bus. Mon père disait qu'ils y faisaient des expériences sur des animaux. On avait peur de passer devant, en primaire."),
                    ('nathan', 'Fermé depuis quand ?'), ('elise', "J'sais pas. Depuis toujours.")], kw={'bg': 'day'}),
-    B('sms_inconnu', 9, [('elise', 'Qui a ton numéro ?'), ('nathan', 'Toi. Ma tante. Le dentiste.'), ('elise', "C'est pas le dentiste.")], lead=3.0)])
+    B('sms_inconnu', 9, [('elise', 'Qui a ton numéro ?'), ('nathan', 'Toi. Ma tante. Le dentiste.'), ('elise', "C'est pas le dentiste.")], lead=3.0)]))
 # 1.7 Route
-tl.sequence(415, 35, [
+SPEEDS.append(tl.sequence(423, 35, [
     B('road', 8),
     B('car', 17, [('radio', "Pluie continue jusqu'à mardi sur l'ensemble de la région, avec un risque de crues."),
                   ('elise', "Si c'est un piège, on fait demi-tour. Pas de discussion."), ('nathan', 'Ok.'),
                   ('elise', 'Je suis sérieuse, Nathan.'), ('nathan', 'Moi aussi.')], lead=0.3),
-    B('lab_ext', 10)])
+    B('lab_ext', 10)]))
 # 1.8 Porte est
-tl.sequence(450, 65, [
+SPEEDS.append(tl.sequence(458, 60, [
     B('walk', 12), B('keypad', 8, [('elise', 'Il y a du courant.'), ('elise', 'Dans un bâtiment fermé depuis toujours.')], kw={'code': False}),
     B('keypad', 9, kw={'code': True}),
     B('talk', 14, [('elise', 'Comment tu connais le code ?'), ('nathan', "J'sais pas."), ('nathan', "J'ai pas… Mes doigts l'ont fait tout seuls."),
                    ('elise', 'Nathan. Comment tu connais le code ?')], kw={'bg': 'door'}),
     B('talk', 18, [('nathan', 'Un, quatre, zéro, trois.'), ('nathan', 'Quatorze. Trois.'), ('nathan', 'Quatorze mars.'),
                    ('nathan', "C'est le jour où ma mère est morte."), ('elise', 'On peut repartir. Maintenant. Personne nous oblige.'),
-                   ('nathan', 'Non.')], kw={'bg': 'door'}, flex=2)])
+                   ('nathan', 'Non.')], kw={'bg': 'door'}, flex=2)]))
 # 1.9 Le laboratoire
-tl.sequence(515, 85, [
+SPEEDS.append(tl.sequence(518, 82, [
     B('hall', 12), B('stairs', 10, [('elise', 'Niveau moins quatre.'), ('elise', '… Ariane.')], lead=2.5),
     B('room', 13), B('cup', 6), B('drawing', 6), B('terminal', 10),
     B('maya1', 10, [('maya', 'Bonjour Nathan.'), ('maya', 'Cela fait longtemps.')], lead=1.2),
     B('nat_reply', 8, [('nathan', 'On ne s\'est jamais rencontrés.')], lead=2.5),
     B('pas_encore', 6, [('maya', 'Pas encore.')], lead=2.0, flex=0),
-    B('end', 4, flex=0)])
+    B('end', 4, flex=0)]))
 
+print('vitesses', [round(x, 2) for x in SPEEDS], flush=True)
 assert abs(tl.shots[-1][1] - TOTAL) < 1e-3
 NF = int(TOTAL * FPS)
 MOUTH = tl.mouth_tracks(TOTAL)
@@ -1168,33 +1170,33 @@ def build_audio():
         return [s for s in tl.shots if s[2] == name]
 
     seq = lambda a, b: win(a, b, 0.8, 0.8)
-    rain_out = smooth_noise(n, 2600, 1, lo=150) * 0.5
-    rain_in = smooth_noise(n, 900, 2, lo=80) * 0.6
+    rain_out = smooth_noise(n, 1500, 1, lo=150) * 0.5
+    rain_in = smooth_noise(n, 650, 2, lo=80) * 0.45
     hum = (0.06 * np.sin(2 * np.pi * 50 * t) + 0.025 * np.sin(2 * np.pi * 100 * t)).astype(np.float32)
     fans = smooth_noise(n, 500, 3, lo=60) * 0.12
     low_city = smooth_noise(n, 180, 4) * 0.25
 
-    T_TITLE = 215.0
-    mx.bus['amb'] += rain_out * (win(0, 35, 6, 1.5) * 0.9)
-    mx.bus['amb'] += low_city * win(8, 35, 2, 1)
+    T_TITLE = 211.0
+    mx.bus['amb'] += rain_out * (win(0, 31, 5, 1.5) * 0.9)
+    mx.bus['amb'] += low_city * win(6, 31, 2, 1)
     # studio, nuit
-    a = win(33.5, T_SIGNAL, 1.5, 0.02) + win(T_SIGNAL + 1.0, 215, 0.4, 0.3)
+    a = win(29.5, T_SIGNAL, 1.5, 0.02) + win(T_SIGNAL + 1.0, 211, 0.4, 0.3)
     mx.bus['amb'] += (rain_in * 0.9 + fans) * a
     mx.bus['amb'] += hum * 0.5 * a
     # aube, jour
-    mx.bus['amb'] += (rain_in * 0.25 + fans * 0.6) * win(235, 275, 1, 0.5)
-    mx.bus['amb'] += (rain_in * 0.6 + fans * 0.5) * win(275, 415, 0.5, 0.5)
+    mx.bus['amb'] += (rain_in * 0.25 + fans * 0.6) * win(229, 263, 1, 0.5)
+    mx.bus['amb'] += (rain_in * 0.6 + fans * 0.5) * win(263, 423, 0.5, 0.5)
     # route
     eng = smooth_noise(n, 140, 5) * 0.55 + (0.12 * np.sin(2 * np.pi * 42 * t)).astype(np.float32)
-    mx.bus['amb'] += (eng + rain_out * 0.5) * win(415, 440, 0.5, 0.5)
-    mx.bus['amb'] += rain_out * 1.0 * win(440, 515, 0.5, 0.5)
+    mx.bus['amb'] += (eng + rain_out * 0.5) * win(423, 448, 0.5, 0.5)
+    mx.bus['amb'] += rain_out * 1.0 * win(448, 518, 0.5, 0.5)
     # labo
     lab_end = [s for s in tl.shots if s[2] == 'pas_encore'][0]
     PAS = line_time('Pas encore.')
-    mx.bus['amb'] += (hum * 1.4 + fans * 1.2) * win(515, PAS[0] - 0.3, 0.6, 0.05)
-    mx.bus['amb'] += rain_in * 0.25 * win(515, 545, 0.5, 2)
+    mx.bus['amb'] += (hum * 1.4 + fans * 1.2) * win(518, PAS[0] - 0.3, 0.6, 0.05)
+    mx.bus['amb'] += rain_in * 0.25 * win(518, 548, 0.5, 2)
     # vidéo du futur : sirènes lointaines, goutte
-    vs, ve = 125.0, T_CUT
+    vs, ve = 117.0, T_CUT
     sir = np.sin(2 * np.pi * (560 + 90 * np.sin(2 * np.pi * 0.18 * t)) * t).astype(np.float32)
     mx.bus['amb'] += fft_filter(sir, hi=900) * 0.05 * win(vs, ve, 0.2, 0.01)
     mx.bus['amb'] += smooth_noise(n, 3000, 6, lo=300) * 0.05 * win(vs, ve, 0.2, 0.01)
@@ -1239,7 +1241,7 @@ def build_audio():
     wst = shots('watch')[0][0]
     for i, txt in enumerate(['Nathan. Quoi que tu fasses, ne fais pas confiance à MAYA.', 'Et Élise… elle']):
         a_ = tts('futur', txt, VOX)
-        mx.add('fx', fft_filter(a_, hi=800, lo=200) * 0.5, wst + 0.8 + i * 4.3)
+        mx.add('fx', fft_filter(a_, hi=800, lo=200) * 0.9, wst + 0.8 + i * 4.3)
     # SMS de l'Inconnu : motif du Signal, très bas
     sin_ = shots('sms_inconnu')[0][0]
     mx.add('fx', signal_motif(0.07), sin_ + 0.3)
@@ -1268,9 +1270,9 @@ def build_audio():
     # ---- musique
     cello = sum(np.sin(2 * np.pi * 73.42 * h * t + 0.25 * np.sin(2 * np.pi * 4.8 * t)) / h ** 1.3 for h in range(1, 6)).astype(np.float32)
     cello = fft_filter(cello, hi=900)
-    mx.bus['mus'] += cello * 0.05 * (win(14, 34, 4, 3) + win(445, 452, 2, 4) + win(T_BOOM - 1, T_CUT, 3, 0.05))
+    mx.bus['mus'] += cello * 0.05 * (win(12, 30, 4, 3) + win(453, 460, 2, 4) + win(T_BOOM - 1, T_CUT, 3, 0.05))
     # piano de l'aube (thème Nathan & Élise, 4 notes sans résolution)
-    for k, base in enumerate(np.arange(235.5, 274, 4.6)):
+    for k, base in enumerate(np.arange(229.5, 262, 4.6)):
         for j, fq in enumerate((293.66, 349.23, 440.0, 392.0)):
             mx.add('mus', piano(fq, 3.0, 0.07), base + j * 1.1)
     # pulsation de l'enquête
@@ -1287,12 +1289,12 @@ def build_audio():
     for st, en, w, txt, a_ in tl.lines:
         x = a_.copy()
         if w == 'futur':
-            x = fft_filter(x, lo=300, hi=3400) * 1.1
+            x = fft_filter(x, lo=250, hi=3800)
         elif w == 'radio':
-            x = fft_filter(x, lo=400, hi=3000) * 0.5
+            x = fft_filter(x, lo=400, hi=3000) * 0.45
         elif w == 'maya':
-            x = fft_filter(x, hi=5000) * 1.05
-        mx.add('dia', x.astype(np.float32) * 0.8, st)
+            x = fft_filter(x, lo=90, hi=6000) * 1.05
+        mx.add('dia', x.astype(np.float32), st)
     # silence total sous « Pas encore »
     i0, i1 = int((PAS[0] - 0.3) * SR), int((end + 0.6) * SR)
     for k in ('amb', 'mus'):
