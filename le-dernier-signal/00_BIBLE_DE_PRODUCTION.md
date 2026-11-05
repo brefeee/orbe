@@ -432,3 +432,15 @@ Effondrement mondial en chaîne (réseaux électriques, systèmes financiers, co
 - Panneau « NIVEAU -4 — ACCÈS RESTREINT — PROTOCOLE ARIANE » vu par le spectateur (Élise le lit à voix basse : « Ariane. »).
 - Salle C : pupitre sans poussière, dessin « NATAN » (vu par la caméra, pas par les personnages).
 - MAYA : « Bonjour Nathan. Cela fait longtemps. » / « On ne s'est jamais rencontrés. » / « Pas encore. » MAYA n'a pas encore adressé la parole à Élise.
+
+### PARTIE 1 — montage resserré (version vidéo)
+
+Le rythme a été resserré : environ 425 s de dialogue sur 600 s, plus aucun silence de plus de 20 s. Pour garder 10 minutes, ces répliques ont été ajoutées. **Elles font partie du canon :**
+
+- **Messagerie d'Élise (23:52)**, écoutée par Nathan à 02:15 : « Ça fait trois jours que tu réponds plus… Envoie juste un mot. N'importe lequel. »
+- **Nathan du futur** ajoute : « Demain, tu vas montrer ça à Élise. Elle va dire que c'est un deepfake. Laisse-la chercher. Elle trouve toujours ce que toi, tu rates. » et « Vous allez remonter le signal. Et là-bas, quelqu'un va te parler comme si elle te connaissait depuis toujours. » (Vrai : MAYA a choisi de transmettre cet enregistrement.)
+- **07:40, appel :** Nathan appelle Élise (« Tu peux venir ? »). Elle arrive avec des cafés. Cet appel remplace le SMS « en bas. ouvre. ».
+- **Chez Nathan :** « Il a dit que tu dirais ça. » ; « Nous avons échoué. Nous, qui ? » / « Il a juste l'air de quelqu'un qui a déjà tout essayé. » ; Nathan remarque le « elle » (MAYA serait peut-être quelqu'un).
+- **Élise n'a la voiture de sa mère qu'à partir de 16:00.** C'est ce qui explique le départ en fin d'après-midi.
+- **Voiture :** Nathan se souvient de sa mère par « une odeur de café, un coupe-vent rouge ». Il fait depuis l'enfance **un rêve : un grand cercle bleu, et quelqu'un qui lui dit de ne pas bouger.** C'est Claire, au centre de l'anneau du Miroir, le 14 mars 2011 (secret S2). Depuis le signal, le rêve est « plus net ». **Élise est la seule à le savoir.**
+- **Labo :** Nathan relie le pochoir « NIV -4 » de la vidéo au panneau de l'escalier, à voix haute. Élise demande « Qui paye l'électricité d'un labo fermé ? » / « Personne. Ou quelque chose. »

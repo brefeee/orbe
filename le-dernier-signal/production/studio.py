@@ -406,44 +406,44 @@ class Timeline:
         self.voicedir = voicedir
         self.shots = []      # (start, end, fn, kw)
         self.lines = []      # (start, end, who, text, audio)
+        self.seqs = []       # (début, fin) de chaque séquence
 
-    def sequence(self, start, length, beats, gap=0.45):
+    def plan(self, beats, gap=0.3, speed=1.0):
+        plans = []
+        for b in beats:
+            auds = [(w, t, tts(w, t, self.voicedir, speed)) for w, t in b.get('lines', [])]
+            need = sum(len(a) / SR for _, _, a in auds) + gap * max(0, len(auds) - 1)
+            need += b.get('lead', 0.35) + 0.45 if auds else 0
+            plans.append([b, auds, need, max(b['min'], need)])
+        return plans
+
+    def natural(self, beats, gap=0.3):
+        return sum(p[3] for p in self.plan(beats, gap))
+
+    def sequence(self, start, length, beats, gap=0.3):
+        """start=None : enchaîne après la séquence précédente."""
+        if start is None:
+            start = self.seqs[-1][1] if self.seqs else 0.0
         speed = 1.0
-        for _ in range(8):
-            plans = []
-            for b in beats:
-                auds = [(w, t, tts(w, t, self.voicedir, speed)) for w, t in b.get('lines', [])]
-                need = sum(len(a) / SR for _, _, a in auds) + gap * max(0, len(auds) - 1)
-                need += b.get('lead', 0.6) + 0.7 if auds else 0
-                plans.append([b, auds, need, max(b['min'], need)])
-            total = sum(p[3] for p in plans)
-            if total <= length + 1e-6:
-                break
-            # comprime d'abord les plans muets
-            over = total - length
-            silent = [p for p in plans if p[3] > p[2] and p[3] > p[0]['min'] * 0.6]
-            room = sum(p[3] - max(p[2], p[0]['min'] * 0.6) for p in silent)
-            if room >= over:
-                for p in silent:
-                    r = p[3] - max(p[2], p[0]['min'] * 0.6)
-                    p[3] -= over * r / room
-                total = length
-                break
-            if speed >= 1.08:
-                raise ValueError(f'séquence {start}+{length}s trop courte pour ses dialogues ({total:.1f}s nécessaires)')
-            speed *= 1.04
-        extra = length - sum(p[3] for p in plans)
-        flex = sum(p[0].get('flex', 1) * p[0]['min'] for p in plans) or 1
+        plans = self.plan(beats, gap, speed)
+        if length is None:
+            length = sum(p[3] for p in plans)
+        total = sum(p[3] for p in plans)
+        if total > length + 1e-6:
+            raise ValueError(f'séquence {start:.1f}+{length:.1f}s trop courte ({total:.1f}s nécessaires)')
+        extra = length - total
+        fx = lambda b: b.get('flex', 0.15 if b.get('lines') else 1)  # la marge va aux plans muets, pas aux dialogues
+        flex = sum(fx(p[0]) * p[0]['min'] for p in plans) or 1
         t = start
         for b, auds, need, dur in plans:
-            dur += extra * b.get('flex', 1) * b['min'] / flex
+            dur += extra * fx(b) * b['min'] / flex
             self.shots.append((t, t + dur, b['shot'], b.get('kw', {}), dur))
-            lt = t + b.get('lead', 0.6) + (max(0, dur - need) * b.get('center', 0.3))
+            lt = t + b.get('lead', 0.35) + (max(0, dur - need) * b.get('center', 0.3))
             for w, txt, a in auds:
                 self.lines.append((lt, lt + len(a) / SR, w, txt, a))
                 lt += len(a) / SR + gap
             t += dur
-        assert abs(t - (start + length)) < 1e-3, (t, start + length)
+        self.seqs.append((start, start + length))
         return speed
 
     def shot_at(self, t):
