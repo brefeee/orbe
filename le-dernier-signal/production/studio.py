@@ -387,7 +387,8 @@ class Mix:
             return
         self.dia_lr[i:i + m, 0] += out_l[:m]
         self.dia_lr[i:i + m, 1] += out_r[:m]
-        self.bus['dia'][i:i + m] += x[:m]
+        md = min(m, len(x))
+        self.bus['dia'][i:i + md] += x[:md]
 
     def add(self, bus, x, t, gain=1.0):
         i = int(t * SR)
@@ -414,7 +415,7 @@ class Mix:
         out[:, 1] += fft_filter(self.dia_lr[:, 1], lo=70, hi=12000)
         d = dia[np.abs(dia) > 1e-4]
         ref = np.sqrt(np.mean(d ** 2)) if len(d) else 0.1
-        out = out * (0.16 / ref)
+        out = out * (0.125 / ref)
         out = np.tanh(out / 0.89) * 0.89  # crête -1 dB
         return out.astype(np.float32)
 
