@@ -406,7 +406,7 @@ def phone_frame(lines, typing='', glow_on=True):
         d.text((x0 + 12, y + 8), txt, font=SANS_S, fill=(20, 20, 24) if who != 'me' else (255, 255, 255))
         y += 46
     d.rectangle([470, 490, 810, 540], fill=(250, 250, 252))
-    d.text((485, 505), typing + ('|' if typing is not None else ''), font=SANS_S, fill=(30, 30, 30))
+    d.text((485, 505), (typing + '|') if typing is not None else '', font=SANS_S, fill=(30, 30, 30))
     return img
 
 
