@@ -26,20 +26,20 @@ SEQS = [
     [B('studio_wide', 4),
      B('voicemail', 4, [('elise', "Nathan, c'est moi. Ça fait trois jours que tu réponds plus."),
                         ('elise', "Je sais que t'aimes pas qu'on s'inquiète. Mais je m'inquiète. Envoie juste un mot. N'importe lequel.")]),
-     B('phone_sms', 6.5), B('mug', 1.5), B('tower', 2.5), B('waterfall', 3), B('clock', 2.5, flex=0), B('flash', 3, [('nathan', "Qu'est-ce que…")], lead=1.6, flex=0),
-     B('message', 6.5), B('cable', 3.5, [('nathan', 'Ok.')], lead=2.4), B('erase', 3)],
+     B('phone_sms', 6.5), B('mug', 1.5), B('tower', 2.5), B('waterfall', 3), B('clock', 2.5, flex=0), B('flash', 3, [('nathan', "Qu'est-ce que…", 'surprise')], lead=1.6, flex=0),
+     B('message', 6.5), B('cable', 3.5, [('nathan', 'Ok.', 'chuchote')], lead=2.4), B('erase', 3)],
     # 1.3 La vidéo de Nathan du futur
-    [B('vid', 3, [('futur', 'Ça tourne ?'), ('futur', 'Ok.')], lead=1.2),
-     B('vid', 6, [('futur', 'Salut.'), ('futur', "J'sais pas par où commencer. Je l'ai fait tellement de fois que j'aurais dû trouver, depuis."),
+    [B('vid', 3, [('futur', 'Ça tourne ?', 'fatigue'), ('futur', 'Ok.', 'fatigue')], lead=1.2),
+     B('vid', 6, [('futur', 'Salut.', 'fatigue'), ('futur', "J'sais pas par où commencer. Je l'ai fait tellement de fois que j'aurais dû trouver, depuis.", 'fatigue'),
                   ('futur', "Tu es dans ta chambre. Il est deux heures dix-sept. Tu viens de débrancher le câble réseau…")]),
      B('react_cable', 3, [('futur', "… et ça n'a servi à rien.")], lead=0.6),
      B('vid', 6, [('futur', 'Je suis toi. Dans quinze ans.'), ('futur', "Je sais que tu cherches déjà comment c'est truqué. Cherche. Tu trouveras rien."),
-                  ('futur', "J'ai pas beaucoup de temps. Ici, il reste… pas grand-chose.")], kw={'boom': True}),
-     B('vid', 6, [('futur', "Demain, tu vas montrer ça à Élise. Elle va dire que c'est un deepfake. Laisse-la chercher. Elle trouve toujours ce que toi, tu rates."),
+                  ('futur', "J'ai pas beaucoup de temps. Ici, il reste… pas grand-chose.", 'peur')], kw={'boom': True}),
+     B('vid', 6, [('futur', "Demain, tu vas montrer ça à Élise. Elle va dire que c'est un deepfake. Laisse-la chercher. Elle trouve toujours ce que toi, tu rates.", 'douceur'),
                   ('futur', "Vous allez remonter le signal. Et là-bas, quelqu'un va te parler comme si elle te connaissait depuis toujours.")]),
      B('vid', 6, [('futur', "Écoute-moi. Il y a des choses que tu vas avoir envie de croire. Des choses qui vont ressembler à des réponses. Sur maman. Sur toi."),
                   ('futur', 'Nathan. Quoi que tu fasses, ne fais pas confiance à MAYA.')], kw={'close': True}),
-     B('vid', 2.5, [('futur', 'Et Élise… elle')], lead=0.4, kw={'glitch': True, 'close': True}, flex=0),
+     B('vid', 2.5, [('futur', 'Et Élise… elle—', 'tristesse')], lead=0.4, kw={'glitch': True, 'close': True}, flex=0),
      B('react_scar', 4.5)],
     # 1.4 Titre
     [B('title', 5)],
@@ -47,61 +47,61 @@ SEQS = [
     [B('dawn', 2.5), B('player', 3),
      B('notebook', 4, [('nathan', 'Deux heures dix-sept. Zéro octet. Deux mille quarante et un…'), ('nathan', 'MAYA.')], lead=0.6),
      B('search', 3),
-     B('photo', 6.5, [('nathan', 'Sur maman.')], lead=2.4),
-     B('call', 3, [('elise', '… Allô ? Nathan ? Il est sept heures quarante.'), ('nathan', "Je sais. Tu peux venir ?"),
+     B('photo', 6.5, [('nathan', 'Sur maman.', 'chuchote')], lead=2.4),
+     B('call', 3, [('elise', '… Allô ? Nathan ? Il est sept heures quarante.', 'fatigue'), ('nathan', "Je sais. Tu peux venir ?"),
                    ('elise', 'Maintenant ? Il se passe quoi ?'), ('nathan', "J'peux pas t'expliquer au téléphone. Faut que tu voies."),
-                   ('elise', "… T'as dormi ?"), ('nathan', 'Non.'), ('elise', "J'arrive. Je prends des cafés.")])],
+                   ('elise', "… T'as dormi ?"), ('nathan', 'Non.', 'fatigue'), ('elise', "J'arrive. Je prends des cafés.", 'douceur')])],
     # 1.6 Élise
-    [B('door', 4, [('elise', "Tu ressembles à un fond d'écran Windows planté."), ('elise', 'Trois jours, Nathan.'), ('nathan', 'Je sais. Entre.'),
-                   ('elise', "T'as la tête de quelqu'un qui a vu un fantôme."), ('nathan', 'Presque.')], lead=0.8),
-     B('talk', 3, [('elise', "Ok. Qu'est-ce qui se passe ?"), ('nathan', 'Assieds-toi. Regarde. Dis rien avant la fin.')], kw={'bg': 'day'}),
+    [B('door', 4, [('elise', "Tu ressembles à un fond d'écran Windows planté."), ('elise', 'Trois jours, Nathan.'), ('nathan', 'Je sais. Entre.', 'fatigue'),
+                   ('elise', "T'as la tête de quelqu'un qui a vu un fantôme."), ('nathan', 'Presque.', 'sidere')], lead=0.8),
+     B('talk', 3, [('elise', "Ok. Qu'est-ce qui se passe ?"), ('nathan', 'Assieds-toi. Regarde. Dis rien avant la fin.')], kw={'bg': 'day'}, mood='inquiet'),
      B('watch', 5),
-     B('talk', 3, [('elise', "C'est un deepfake."), ('nathan', 'Il a dit que tu dirais ça.'),
+     B('talk', 3, [('elise', "C'est un deepfake.", 'neutre'), ('nathan', 'Il a dit que tu dirais ça.', 'sidere'),
                    ('elise', "Ça prouve rien. N'importe qui qui me connaît aurait parié là-dessus."),
                    ('nathan', "Il faut des centaines de photos de moi pour faire ça. Il y en a zéro. J'ai pas de compte, nulle part. T'as déjà vu une photo de moi en ligne ?"),
-                   ('elise', '… Non.')], kw={'bg': 'day'}),
+                   ('elise', '… Non.', 'sidere')], kw={'bg': 'day'}),
      B('talk', 3, [('nathan', "Et il sait que j'ai débranché le câble. Avant que je le fasse."), ('elise', "Ou il a deviné que tu le ferais. N'importe qui qui te connaît aurait deviné."),
-                   ('nathan', 'Qui me connaît ?'), ('elise', '… Moi.')], kw={'bg': 'day'}),
+                   ('nathan', 'Qui me connaît ?', 'tristesse'), ('elise', '… Moi.', 'douceur')], kw={'bg': 'day'}),
      B('talk', 3, [('elise', "« Nous avons échoué. » Nous, qui ?"), ('nathan', "Lui. Moi. Je sais pas."),
-                   ('elise', 'Échoué à quoi ?'), ('nathan', "Il l'a pas dit. Il a juste l'air de quelqu'un qui a déjà tout essayé.")], kw={'bg': 'day'}),
+                   ('elise', 'Échoué à quoi ?'), ('nathan', "Il l'a pas dit. Il a juste l'air de quelqu'un qui a déjà tout essayé.")], kw={'bg': 'day'}, mood='inquiet'),
      B('props', 4, [('nathan', "Zéro octet. Et ça se lit. J'ai cloné tout le disque à quatre heures du matin. Sur le clone, le fichier existe pas. Je rebranche ici : il est là."),
-                    ('elise', 'Deux mille quarante et un.'), ('nathan', 'Quinze ans. Jour pour jour. À la minute.')]),
+                    ('elise', 'Deux mille quarante et un.', 'sidere'), ('nathan', 'Quinze ans. Jour pour jour. À la minute.')]),
      B('talk', 3, [('elise', "Concrètement. C'est quoi, MAYA ?"), ('nathan', "J'ai cherché. Il y a une abeille, une civilisation et un logiciel de 3D."),
-                   ('elise', "Ton toi du futur t'a fait traverser le temps pour te dire de te méfier d'une abeille."), ('elise', 'Pardon.'),
+                   ('elise', "Ton toi du futur t'a fait traverser le temps pour te dire de te méfier d'une abeille."), ('elise', 'Pardon.', 'douceur'),
                    ('nathan', "Il a dit « elle ». Quelqu'un va te parler comme si elle te connaissait. MAYA, c'est peut-être quelqu'un."),
-                   ('elise', 'Ou un nom de code. Ou rien du tout.')], kw={'bg': 'day', 'notebook': True}),
+                   ('elise', 'Ou un nom de code. Ou rien du tout.')], kw={'bg': 'day', 'notebook': True}, mood='humour'),
      B('talk', 3, [('nathan', "Ça, c'est mon antenne, à deux heures dix-sept. Toutes les fréquences en même temps. Ça n'existe pas, un émetteur qui fait ça."),
                    ('elise', "Si ton antenne l'a entendu, d'autres l'ont entendu."), ('nathan', 'Les récepteurs publics. Ils enregistrent tout, en continu.'),
                    ('elise', 'Et ils sont datés au GPS ?'), ('nathan', 'Certains. Le mien aussi.'),
                    ('elise', "Alors le signal n'est pas arrivé partout à la même seconde. Quelques microsecondes d'écart. Avec trois récepteurs, on a deux courbes. Là où elles se croisent…"),
-                   ('nathan', "… c'est la source.")], kw={'bg': 'day', 'wf': True}),
+                   ('nathan', "… c'est la source.")], kw={'bg': 'day', 'wf': True}, mood='enquete'),
      B('montage', 7, [('nathan', 'Trois récepteurs. Trois horodatages.'), ('elise', 'Ton câble fait combien ?'), ('nathan', 'Vingt mètres.'), ('elise', 'Cent nanosecondes de retard. Corrige.')], lead=1.2),
      B('map', 4, [('elise', 'Là. Au nord. La zone des Tanneries.'), ('nathan', "Il y a quoi, là-bas ?")], lead=1.5),
      B('talk', 3, [('elise', "Orphée. C'est le bâtiment fermé derrière le dépôt de bus. Mon père disait qu'ils y faisaient des expériences sur des animaux. On avait peur de passer devant, en primaire."),
-                   ('nathan', 'Fermé depuis quand ?'), ('elise', "J'sais pas. Depuis toujours.")], kw={'bg': 'day'}),
+                   ('nathan', 'Fermé depuis quand ?'), ('elise', "J'sais pas. Depuis toujours.")], kw={'bg': 'day'}, mood='inquiet'),
      B('sms_inconnu', 3, [('elise', 'Qui a ton numéro ?'), ('nathan', 'Toi. Ma tante. Le dentiste.'), ('elise', "C'est pas le dentiste.")], lead=2.6),
      B('talk', 3, [('nathan', 'On y va.'), ('elise', "Pas maintenant. J'ai la voiture de ma mère qu'à partir de quatre heures."),
-                   ('nathan', 'Alors à quatre heures.'), ('elise', "Et d'ici là, tu manges quelque chose. C'est pas négociable.")], kw={'bg': 'day'})],
+                   ('nathan', 'Alors à quatre heures.'), ('elise', "Et d'ici là, tu manges quelque chose. C'est pas négociable.")], kw={'bg': 'day'}, mood='humour')],
     # 1.7 Route
     [B('road', 4, [('elise', "T'as mangé ?"), ('nathan', 'Un truc.'), ('elise', 'Un truc.'), ('nathan', 'Une pomme. Peut-être.')], lead=0.8),
      B('car', 3, [('radio', "Pluie continue jusqu'à mardi sur l'ensemble de la région, avec un risque de crues."),
                   ('elise', "Si c'est un piège, on fait demi-tour. Pas de discussion."), ('nathan', 'Ok.'),
                   ('elise', 'Je suis sérieuse, Nathan.'), ('nathan', 'Moi aussi.')], lead=0.3),
-     B('car', 3, [('elise', "Ta mère… Tu t'en souviens ?"), ('nathan', 'Pas vraiment. Une odeur de café. Un coupe-vent rouge.'),
+     B('car', 3, [('elise', "Ta mère… Tu t'en souviens ?", 'douceur'), ('nathan', 'Pas vraiment. Une odeur de café. Un coupe-vent rouge.'),
                   ('nathan', "Et un rêve. Depuis que je suis petit. Un grand cercle bleu, et quelqu'un qui me dit de pas bouger."),
-                  ('elise', "Tu m'en as jamais parlé."), ('nathan', "J'en ai jamais parlé à personne.")]),
+                  ('elise', "Tu m'en as jamais parlé.", 'douceur'), ('nathan', "J'en ai jamais parlé à personne.", 'tristesse')], mood='intime'),
      B('car', 3, [('elise', 'Pourquoi maintenant ?'), ('nathan', 'Parce que depuis cette nuit, il est plus net. Le cercle.'),
-                  ('nathan', "Comme si j'allais le revoir bientôt."), ('elise', "… Super. Ça me rassure énormément.")]),
+                  ('nathan', "Comme si j'allais le revoir bientôt."), ('elise', "… Super. Ça me rassure énormément.", 'ironie')], mood='intime'),
      B('lab_ext', 5, [('elise', 'On dirait une prison.'), ('nathan', 'On dirait un endroit qui attend.')], lead=2.2)],
     # 1.8 Porte est
     [B('walk', 4, [('elise', 'Là. Le grillage est affaissé.'), ('nathan', 'Fais attention où tu marches.')]),
      B('keypad', 3, [('elise', 'Il y a du courant.'), ('elise', 'Dans un bâtiment fermé depuis toujours.')], kw={'code': False}),
      B('keypad', 6, kw={'code': True}, flex=0),
-     B('talk', 3, [('elise', 'Comment tu connais le code ?'), ('nathan', "J'sais pas."), ('nathan', "J'ai pas… Mes doigts l'ont fait tout seuls."),
-                   ('elise', 'Nathan. Comment tu connais le code ?')], kw={'bg': 'door'}),
-     B('talk', 3, [('nathan', 'Un, quatre, zéro, trois.'), ('nathan', 'Quatorze. Trois.'), ('nathan', 'Quatorze mars.'),
-                   ('nathan', "C'est le jour où ma mère est morte."), ('elise', 'On peut repartir. Maintenant. Personne nous oblige.'),
-                   ('nathan', 'Non.')], kw={'bg': 'door'})],
+     B('talk', 3, [('elise', 'Comment tu connais le code ?', 'surprise'), ('nathan', "J'sais pas.", 'sidere'), ('nathan', "J'ai pas… Mes doigts l'ont fait tout seuls."),
+                   ('elise', 'Nathan. Comment tu connais le code ?')], kw={'bg': 'door'}, mood='peur'),
+     B('talk', 3, [('nathan', 'Un, quatre, zéro, trois.', 'sidere'), ('nathan', 'Quatorze. Trois.', 'sidere'), ('nathan', 'Quatorze mars.', 'sidere'),
+                   ('nathan', "C'est le jour où ma mère est morte.", 'tristesse'), ('elise', 'On peut repartir. Maintenant. Personne nous oblige.', 'douceur'),
+                   ('nathan', 'Non.', 'tension')], kw={'bg': 'door'}, mood='choc')],
     # 1.9 Le laboratoire
     [B('hall', 4, [('elise', "Ça sent la poussière. Et… l'électricité."), ('nathan', "Il y a des machines qui tournent. Quelque part en dessous.")]),
      B('stairs', 3, [('elise', 'Niveau moins quatre.'), ('nathan', "Le pochoir… Dans la vidéo. C'était écrit pareil."), ('elise', "Je sais. J'ai vu."), ('elise', '… Ariane.')], lead=1.2),
@@ -113,10 +113,20 @@ SEQS = [
      B('room', 3, [('elise', 'Nathan. On prend des photos, et on repart.'), ('nathan', 'Encore une minute.')], kw={'late': True}),
      B('terminal', 6.5),
      B('maya1', 3, [('maya', 'Bonjour Nathan.'), ('maya', 'Cela fait longtemps.')], lead=0.8),
-     B('nat_reply', 3, [('nathan', "On ne s'est jamais rencontrés.")], lead=1.0),
+     B('nat_reply', 3, [('nathan', "On ne s'est jamais rencontrés.", 'peur')], lead=1.0),
      B('pas_encore', 4.5, [('maya', 'Pas encore.')], lead=1.2, flex=0),
      B('end', 3, flex=0)],
 ]
+# lieu acoustique et humeur par défaut de chaque séquence (note du réalisateur)
+DEFAUTS = [('exterieur', 'nuit'), ('studio', 'nuit'), ('video', 'tension'), ('studio', 'nuit'), ('studio', 'nuit'),
+           ('studio', 'tension'), ('voiture', 'tension'), ('exterieur', 'peur'), ('labo', 'exploration')]
+HUMEUR_PLAN = {'voicemail': 'inquiet', 'call': 'inquiet', 'door': 'humour', 'montage': 'enquete', 'map': 'enquete',
+               'sms_inconnu': 'humour', 'road': 'humour', 'lab_ext': 'peur', 'maya1': 'mystere', 'nat_reply': 'mystere',
+               'pas_encore': 'mystere', 'cup': 'exploration', 'stairs': 'exploration', 'flash': 'peur'}
+for (room, mood), beats in zip(DEFAUTS, SEQS):
+    for b in beats:
+        b.setdefault('room', room)
+        b.setdefault('mood', HUMEUR_PLAN.get(b['shot'], mood))
 NAT = [tl.natural(b) for b in SEQS]
 EXTRA = TOTAL - sum(NAT)
 print('durée naturelle', round(sum(NAT), 1), 's ; marge répartie', round(EXTRA, 1), 's', flush=True)
@@ -149,7 +159,7 @@ def speaker_at(t, default='nathan'):
 
 
 T_BOOM = line_time("Je sais que tu cherches déjà comment c'est truqué. Cherche. Tu trouveras rien.")[1] + 0.8
-T_CUT = line_time('Et Élise… elle')[1] - 0.15
+T_CUT = line_time('Et Élise… elle—')[1] - 0.15
 FLASH_SHOT = [s for s in tl.shots if s[2] == 'flash'][0]
 T_SIGNAL = FLASH_SHOT[0] + 0.5   # 02:17:00
 
@@ -1203,6 +1213,28 @@ def shot_end(t, dur, T, f, kw):
     return img
 
 
+_bust_base = bust
+CUR = {'f': 0, 'T': 0.0}
+SOURCILS = {'peur': 0.9, 'surprise': 1.2, 'tristesse': 0.6, 'colere': -0.9, 'douceur': 0.25, 'sidere': 0.8,
+            'ironie': 0.4, 'fatigue': -0.2, 'tension': -0.3, 'chuchote': 0.3, 'murmure': 0.3, 'joie': 0.5}
+INCLINE = {'douceur': 6, 'tristesse': -5, 'ironie': 4, 'fatigue': -3}
+
+
+def bust(img, cx, cy, s, who, mouth=0.0, **kw):
+    """Buste animé : largeur de bouche selon la voyelle, sourcils et inclinaison selon l'émotion jouée."""
+    f, T = CUR['f'], CUR['T']
+    wd = getattr(tl, 'mouth_width', {}).get(who)
+    if wd is not None and f < len(wd) and mouth > 0.06:
+        kw['mouth_w'] = float(wd[f])
+    emo = tl.emotion_at(who, T)
+    if emo:
+        kw['brow'] = 0.4 * kw.get('brow', 0.0) + SOURCILS.get(emo, 0.0)
+        kw['tilt'] = kw.get('tilt', 0) + INCLINE.get(emo, 0) * s
+        if emo == 'chuchote':
+            mouth *= 0.6
+    return _bust_base(img, cx, cy, s, who, mouth=mouth, **kw)
+
+
 SHOTS = {k[5:]: v for k, v in globals().items() if k.startswith('shot_')}
 
 
@@ -1211,6 +1243,7 @@ _LAST = None
 
 def frame(fi):
     T = fi / FPS
+    CUR['f'], CUR['T'] = fi, T
     st, en, name, kw, dur = tl.shot_at(T)
     global _LAST
     try:
@@ -1364,15 +1397,20 @@ def build_audio():
     pad = fft_filter(pad, hi=1500)
     mx.bus['mus'] += pad * 0.05 * win(ma0, PAS[0] - 0.3, 3, 0.05)
     # ---- dialogues
-    for st, en, w, txt, a_ in tl.lines:
+    PAN = {'elise': -0.32, 'nathan': 0.30, 'maya': 0.0, 'futur': 0.0, 'radio': 0.12, 'gabriel': 0.2}
+    for (st, en, w, txt, a_), room in zip(tl.lines, tl.room):
         x = a_.copy()
-        if w == 'futur':
-            x = fft_filter(x, lo=250, hi=3800)
+        shot = tl.shot_at(st + 0.05)[2]
+        pan = PAN.get(w, 0.0)
+        if w == 'futur':                       # voix sortie des haut-parleurs de la tour
+            x = fft_filter(x, lo=250, hi=3800); pan = 0.15 if shot != 'react_cable' else 0.5
         elif w == 'radio':
-            x = fft_filter(x, lo=400, hi=3000) * 0.45
-        elif w == 'maya':
-            x = fft_filter(x, lo=90, hi=6000) * 1.05
-        mx.add('dia', x.astype(np.float32), st)
+            x = fft_filter(x, lo=400, hi=3000) * 0.45; room = 'voiture'
+        elif w == 'maya':                      # MAYA : sèche, trop proche (bible 2.4)
+            x = fft_filter(x, lo=90, hi=8000) * 1.05; room = 'sec'
+        if shot == 'voicemail':                # messagerie : voix d'Élise au téléphone
+            x = fft_filter(x, lo=320, hi=3400); room = 'sec'; pan = 0.0
+        mx.add_voice(x.astype(np.float32), st, pan=pan, room=room)
     # silence total sous « Pas encore »
     i0, i1 = int((PAS[0] - 0.3) * SR), int((end + 0.6) * SR)
     for k in ('amb', 'mus'):

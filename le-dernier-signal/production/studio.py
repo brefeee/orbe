@@ -49,7 +49,7 @@ def mix(a, b, t):
 
 # ------------------------------------------------------------------ personnages
 def bust(img, cx, cy, s, who, mouth=0.0, blink=False, hood=False, light=(1, 1, 1),
-         look=(0, 0), brow=0.0, rim=None, scar=False, tilt=0):
+         look=(0, 0), brow=0.0, rim=None, scar=False, tilt=0, mouth_w=1.0):
     """Buste de face. cy = centre du visage. mouth 0..1 (synchro labiale)."""
     r = REF[who]
     d = ImageDraw.Draw(img)
@@ -142,7 +142,7 @@ def bust(img, cx, cy, s, who, mouth=0.0, blink=False, hood=False, light=(1, 1, 1
     # bouche (synchro labiale)
     my = cy + 50 * s
     mo = max(0.0, min(1.0, mouth))
-    mw = (22 - 4 * mo) * s
+    mw = (22 - 4 * mo) * s * mouth_w
     mh = (2 + 18 * mo) * s
     lip = L(tint(r['skin'], (0.72, 0.55, 0.55)))
     if mo < 0.06:
@@ -293,20 +293,10 @@ def read_wav(fn):
     return out
 
 
-def tts(who, text, outdir, speed_mult=1.0):
-    model, ls, semi, _ = VOICES[who]
-    fn = os.path.join(outdir, f'{who}_{abs(hash((text, speed_mult, model, ls, semi))) % 10**10}.wav')
-    if not os.path.exists(fn):
-        clean = text.replace('…', ',').replace('—', '').replace('«', '').replace('»', '').strip(' ,')
-        raw = fn + '.raw.wav'
-        subprocess.run(['python3', '-m', 'piper', '-m', f'{VOICE_DIR}/{model}/{model}.onnx', '-f', raw,
-                        '--length-scale', str(round(ls / speed_mult, 3)), '--noise-scale', '0.6', '--noise-w-scale', '0.75'],
-                       input=clean.encode(), check=True, stderr=subprocess.DEVNULL)
-        af = f'rubberband=pitch={2 ** (semi / 12):.5f}:formant=preserved,' if semi else ''
-        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af', af + f'aresample={SR}', '-ac', '1', fn], check=True)
-        os.remove(raw)
-    x = read_wav(fn)
-    return x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.1   # niveau de dialogue constant (-20 dBFS RMS)
+def tts(who, text, outdir, speed_mult=1.0, emotion='neutre'):
+    """Voix d'un personnage par le moteur vocal du film (voir moteur_vocal.py)."""
+    import moteur_vocal
+    return moteur_vocal.voix(who, text, emotion, outdir, vitesse=speed_mult)
 
 
 # ------------------------------------------------------------------ audio
@@ -361,6 +351,43 @@ class Mix:
         self.bus = {k: np.zeros(self.n, np.float32) for k in ('amb', 'fx', 'mus', 'dia')}
         # niveaux relatifs au dialogue : l'ambiance reste un fond, jamais au premier plan
         self.amb_gain, self.fx_gain, self.mus_gain = 0.16, 0.45, 0.7
+        self.dia_lr = np.zeros((self.n, 2), np.float32)
+
+    # acoustique des lieux : (durée de réverbération s, niveau de réverbération, prédélai s)
+    ROOMS = {'studio': (0.35, 0.10, 0.008), 'voiture': (0.12, 0.05, 0.003), 'exterieur': (0.25, 0.04, 0.02),
+             'labo': (1.4, 0.22, 0.025), 'couloir': (1.1, 0.18, 0.02), 'video': (0.5, 0.12, 0.01), 'sec': None}
+
+    @staticmethod
+    def _ir(rt, seed):
+        rng = np.random.default_rng(seed)
+        n = int(rt * SR)
+        t = np.arange(n) / SR
+        ir = rng.standard_normal(n) * np.exp(-6.9 * t / rt)
+        return fft_filter(ir.astype(np.float32), hi=4500, lo=120) / np.sqrt(np.sum(ir ** 2))
+
+    def add_voice(self, x, t, pan=0.0, room='sec', gain=1.0):
+        """Voix placée dans l'espace stéréo (pan -1 gauche, +1 droite) et dans l'acoustique du lieu."""
+        x = x * gain
+        L, R = np.cos((pan + 1) * np.pi / 4), np.sin((pan + 1) * np.pi / 4)
+        out_l, out_r = x * L * 1.41, x * R * 1.41
+        spec = self.ROOMS.get(room or 'sec')
+        if spec:
+            rt, lvl, pre = spec
+            for ch, seed in ((0, 1), (1, 2)):
+                ir = self._ir(rt, seed)
+                wet = np.convolve(x, ir)[: len(x) + len(ir)] * lvl
+                wet = np.concatenate([np.zeros(int(pre * SR), np.float32), wet])
+                if ch == 0:
+                    out_l = np.pad(out_l, (0, len(wet) - len(out_l))) + wet
+                else:
+                    out_r = np.pad(out_r, (0, len(wet) - len(out_r))) + wet
+        i = int(t * SR)
+        m = min(len(out_l), len(out_r), self.n - i)
+        if m <= 0:
+            return
+        self.dia_lr[i:i + m, 0] += out_l[:m]
+        self.dia_lr[i:i + m, 1] += out_r[:m]
+        self.bus['dia'][i:i + m] += x[:m]
 
     def add(self, bus, x, t, gain=1.0):
         i = int(t * SR)
@@ -379,19 +406,22 @@ class Mix:
             duck = 1 - 0.7 * np.clip(env / 0.02, 0, 1)
         else:
             duck = 1
-        out = self.bus['amb'] * duck * self.amb_gain + self.bus['fx'] * self.fx_gain + self.bus['mus'] * duck * self.mus_gain + dia
-        out = fft_filter(out, lo=30, hi=11000)
-        # normalisation sur le dialogue (pas sur la pluie) puis limiteur doux
+        bed = self.bus['amb'] * duck * self.amb_gain + self.bus['fx'] * self.fx_gain + self.bus['mus'] * duck * self.mus_gain
+        bed = fft_filter(bed, lo=30, hi=11000)
+        haas = int(0.011 * SR)  # largeur stéréo de l'ambiance
+        out = np.stack([bed, np.concatenate([bed[haas:], np.zeros(haas, np.float32)]) * 0.97 + bed * 0.03], 1)
+        out[:, 0] += fft_filter(self.dia_lr[:, 0], lo=70, hi=12000)
+        out[:, 1] += fft_filter(self.dia_lr[:, 1], lo=70, hi=12000)
         d = dia[np.abs(dia) > 1e-4]
         ref = np.sqrt(np.mean(d ** 2)) if len(d) else 0.1
         out = out * (0.16 / ref)
         out = np.tanh(out / 0.89) * 0.89  # crête -1 dB
-        return out
+        return out.astype(np.float32)
 
     @staticmethod
     def write(fn, x):
         w = wave.open(fn, 'wb')
-        w.setnchannels(1)
+        w.setnchannels(2 if x.ndim == 2 else 1)
         w.setsampwidth(2)
         w.setframerate(SR)
         w.writeframes((np.clip(x, -1, 1) * 32767).astype(np.int16).tobytes())
@@ -407,12 +437,19 @@ class Timeline:
         self.shots = []      # (start, end, fn, kw)
         self.lines = []      # (start, end, who, text, audio)
         self.seqs = []       # (début, fin) de chaque séquence
+        self.emo = []        # émotion jouée, par réplique
+        self.room = []       # acoustique du lieu, par réplique
 
     def plan(self, beats, gap=0.3, speed=1.0):
         plans = []
         for b in beats:
-            auds = [(w, t, tts(w, t, self.voicedir, speed)) for w, t in b.get('lines', [])]
-            need = sum(len(a) / SR for _, _, a in auds) + gap * max(0, len(auds) - 1)
+            import moteur_vocal
+            auds = []
+            for ln in b.get('lines', []):
+                w, t, note = (tuple(ln) + (None,))[:3]
+                emo = moteur_vocal.diriger(w, t, b.get('mood'), note)
+                auds.append((w, t, tts(w, t, self.voicedir, speed, emo), emo))
+            need = sum(len(a) / SR for _, _, a, _ in auds) + gap * max(0, len(auds) - 1)
             need += b.get('lead', 0.35) + 0.45 if auds else 0
             plans.append([b, auds, need, max(b['min'], need)])
         return plans
@@ -439,9 +476,15 @@ class Timeline:
             dur += extra * fx(b) * b['min'] / flex
             self.shots.append((t, t + dur, b['shot'], b.get('kw', {}), dur))
             lt = t + b.get('lead', 0.35) + (max(0, dur - need) * b.get('center', 0.3))
-            for w, txt, a in auds:
+            for w, txt, a, emo in auds:
+                if txt.rstrip().endswith('—'):   # réplique coupée : la suivante l'interrompt
+                    nxt = len(a) / SR - 0.25
+                else:
+                    nxt = len(a) / SR + gap
                 self.lines.append((lt, lt + len(a) / SR, w, txt, a))
-                lt += len(a) / SR + gap
+                self.emo.append(emo)
+                self.room.append(b.get('room'))
+                lt += nxt
             t += dur
         self.seqs.append((start, start + length))
         return speed
@@ -453,16 +496,28 @@ class Timeline:
         return self.shots[-1]
 
     def mouth_tracks(self, total):
+        """Ouverture de bouche par personnage (et largeur dans self.mouth_width)."""
+        import moteur_vocal
         nfr = int(total * FPS)
-        tr = {}
+        tr, wd = {}, {}
         for st, en, w, txt, a in self.lines:
             arr = tr.setdefault(w, np.zeros(nfr, np.float32))
-            hop = SR // FPS
-            for k in range(int(len(a) / hop)):
-                f = int(st * FPS) + k
-                if 0 <= f < nfr:
-                    arr[f] = max(arr[f], min(1.0, float(np.sqrt(np.mean(a[k * hop:(k + 1) * hop] ** 2))) * 7))
+            arw = wd.setdefault(w, np.ones(nfr, np.float32))
+            ouv, larg = moteur_vocal.visemes(a, FPS)
+            f0 = int(round(st * FPS))
+            for k in range(len(ouv)):
+                f = f0 + k
+                if 0 <= f < nfr and ouv[k] >= arr[f]:
+                    arr[f] = ouv[k]
+                    arw[f] = larg[k]
+        self.mouth_width = wd
         return tr
+
+    def emotion_at(self, who, t, hold=0.8):
+        for (st, en, w, txt, a), emo in zip(self.lines, self.emo):
+            if w == who and st - 0.3 <= t <= en + hold:
+                return emo
+        return None
 
     def sub_at(self, t):
         for st, en, w, txt, a in self.lines:
