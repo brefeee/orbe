@@ -945,7 +945,7 @@ def shot_keypad(t, dur, T, f, kw):
         d.ellipse([x - 22, y - 10, x + 30, y + 40], fill=tint(REF['nathan']['skin'], (0.8, 0.78, 0.74)))
     if green:
         d = ImageDraw.Draw(img)
-        op = min(1, (t - 3.6) / 1.5)
+        op = max(0.0, min(1, (t - 3.6) / 1.5))
         d.rectangle([700, 0, 700 + int(30 * op), H], fill=(20, 40, 90))
         img = glow(img, [700, 0, 700 + int(30 * op), H], (30, 70, 160), 40, 0.8 * op)
     if not code:
@@ -1135,10 +1135,19 @@ def shot_end(t, dur, T, f, kw):
 SHOTS = {k[5:]: v for k, v in globals().items() if k.startswith('shot_')}
 
 
+_LAST = None
+
+
 def frame(fi):
     T = fi / FPS
     st, en, name, kw, dur = tl.shot_at(T)
-    img = SHOTS[name](T - st, dur, T, fi, kw)
+    global _LAST
+    try:
+        img = SHOTS[name](T - st, dur, T, fi, kw)
+        _LAST = img
+    except Exception as e:  # ne casse pas un rendu de 10 min : on journalise et on répète l'image précédente
+        print(f'ERREUR image {fi} ({name}): {e!r}', flush=True)
+        img = _LAST if _LAST is not None else Image.new('RGB', (W, H))
     img = finish(img)
     if name not in ('title', 'end', 'black'):
         subtitle(img, tl.sub_at(T))
