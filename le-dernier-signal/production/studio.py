@@ -332,7 +332,7 @@ def smooth_noise(n, hi, seed=0, lo=None):
 
 def env_ramp(n, a, r):
     e = np.ones(n, np.float32)
-    a, r = int(a), int(r)
+    a, r = min(int(a), n // 2), min(int(r), n - min(int(a), n // 2))  # sons très courts : enveloppe ramenée à leur durée
     if a:
         e[:a] = np.linspace(0, 1, a)
     if r:
