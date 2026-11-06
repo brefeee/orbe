@@ -15,17 +15,20 @@ Architecture (de l'amont vers l'aval) :
                    (corpus SIWIS, voix féminine) et « fr-gilles-low » (voix masculine).
                    Il fournit la prononciation française et une prosodie brute, avec un
                    débit et une variabilité que le moteur pilote.
-  4. IDENTITÉ VOCALE (développé ici) — analyse/resynthèse WORLD (bibliothèque DSP
-                   pyworld, sans aucune voix) : le moteur remplace la hauteur, la longueur
-                   du conduit vocal (formants), le souffle, la raucité, le vibrato et
-                   l'énergie, pour créer une voix propre à chaque personnage, distincte
-                   de la voix du socle.
-  5. JEU ÉMOTIONNEL (développé ici) — courbe de hauteur (déclinaison, montée
-                   interrogative, étendue), tremblement, voix chuchotée, débit, intensité.
+  4. IDENTITÉ VOCALE (développé ici, v5) — sélection de prises : jusqu'à 4 rendus du
+                   socle par groupe de souffle, notés sur la plausibilité de la durée et la
+                   propreté du signal ; suppression du bredouillement (îlots d'énergie isolés
+                   avant/après la phrase). Puis transformation légère : hauteur décalée avec
+                   formants préservés (rubberband via ffmpeg) et égalisation propre à chaque
+                   personnage. La resynthèse WORLD des versions 3-4 a été ABANDONNÉE : elle
+                   rendait les consonnes inintelligibles.
+  5. JEU ÉMOTIONNEL (développé ici) — débit, décalage de hauteur, intensité, pauses,
+                   voix murmurée, selon l'émotion dirigée.
   6. RESPIRATIONS (développé ici) — inspirations synthétisées (bruit mis en forme par
                    des formants), adaptées au personnage et à l'émotion.
-  7. EXTENSION DE BANDE (développé ici) — reconstruit les aigus (8-12 kHz) absents
-                   d'un socle à 16 kHz, pour une voix moins « téléphone ».
+
+Limite connue : les modèles pré-entraînés utilisés sont anciens ; les voyelles nasales
+(an, on, in) sont mal rendues et la voix masculine est échantillonnée à 16 kHz.
 
 Sortie : signal mono 44,1 kHz, plus des pistes de synchro labiale (ouverture et
 arrondi de la bouche) calculées sur la voix finale.
