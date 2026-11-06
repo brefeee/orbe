@@ -441,7 +441,7 @@ class Timeline:
         self.emo = []        # émotion jouée, par réplique
         self.room = []       # acoustique du lieu, par réplique
 
-    def plan(self, beats, gap=0.3, speed=1.0):
+    def plan(self, beats, gap=0.4, speed=1.0):
         plans = []
         for b in beats:
             import moteur_vocal
@@ -455,10 +455,10 @@ class Timeline:
             plans.append([b, auds, need, max(b['min'], need)])
         return plans
 
-    def natural(self, beats, gap=0.3):
+    def natural(self, beats, gap=0.4):
         return sum(p[3] for p in self.plan(beats, gap))
 
-    def sequence(self, start, length, beats, gap=0.3):
+    def sequence(self, start, length, beats, gap=0.4):
         """start=None : enchaîne après la séquence précédente."""
         if start is None:
             start = self.seqs[-1][1] if self.seqs else 0.0

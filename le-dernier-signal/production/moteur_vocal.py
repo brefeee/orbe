@@ -32,7 +32,6 @@ arrondi de la bouche) calculées sur la voix finale.
 """
 import hashlib, json, os, re, subprocess, wave
 import numpy as np
-import pyworld
 
 SR = 44100
 VOICE_DIR = '/opt/voix'
@@ -43,12 +42,12 @@ FRAME = 5.0  # ms
 # vocal (>1 : plus court, plus jeune/clair ; <1 : plus long, plus grave/mûr), souffle (0-1),
 # raucité (irrégularité de hauteur), débit, et s'il respire de façon audible.
 IDENTITES = {
-    'nathan':  dict(socle='fr-gilles-low',   f0=122, etendue=1.05, conduit=1.06, souffle=0.18, raucite=0.004, debit=0.86, respire=True,  air=0.9),
-    'futur':   dict(socle='fr-gilles-low',   f0=104, etendue=0.85, conduit=1.00, souffle=0.28, raucite=0.012, debit=0.95, respire=True,  air=0.6),
-    'gabriel': dict(socle='fr-gilles-low',   f0=86,  etendue=0.80, conduit=0.91, souffle=0.32, raucite=0.02, debit=1.02, respire=True,  air=0.7, vibrato=(5.2, 0.006)),
+    'nathan':  dict(socle='fr-gilles-low',   f0=122, etendue=1.05, conduit=1.06, souffle=0.18, raucite=0.004, debit=1.0, respire=True,  air=0.9),
+    'futur':   dict(socle='fr-gilles-low',   f0=104, etendue=0.85, conduit=1.00, souffle=0.28, raucite=0.012, debit=1.22, respire=True,  air=0.6),
+    'gabriel': dict(socle='fr-gilles-low',   f0=86,  etendue=0.80, conduit=0.91, souffle=0.32, raucite=0.02, debit=1.12, respire=True,  air=0.7, vibrato=(5.2, 0.006)),
     'radio':   dict(socle='fr-gilles-low',   f0=128, etendue=1.10, conduit=1.03, souffle=0.05, raucite=0.002, debit=0.92, respire=False, air=0.5),
-    'elise':   dict(socle='fr-siwis-medium', f0=212, etendue=1.10, conduit=1.03, souffle=0.20, raucite=0.004, debit=0.92, respire=True,  air=1.0),
-    'maya':    dict(socle='fr-siwis-medium', f0=176, etendue=0.80, conduit=0.92, souffle=0.08, raucite=0.0,   debit=1.02, respire=False, air=1.1),
+    'elise':   dict(socle='fr-siwis-medium', f0=212, etendue=1.10, conduit=1.03, souffle=0.20, raucite=0.004, debit=1.0, respire=True,  air=1.0),
+    'maya':    dict(socle='fr-siwis-medium', f0=176, etendue=0.80, conduit=0.92, souffle=0.08, raucite=0.0,   debit=1.15, respire=False, air=1.1),
 }
 
 # ---------------------------------------------------------------- 2. émotions
@@ -68,7 +67,7 @@ EMOTIONS = {
     'fatigue':   dict(debit=1.12, demi_tons=-1.0, etendue=0.75, gain=-2.0, souffle=0.20, pause=1.3, tremble=0.0),
     'sidere':    dict(debit=1.18, demi_tons=-1.0, etendue=0.60, gain=-3.0, souffle=0.20, pause=1.5, tremble=0.006),
     'mystere':   dict(debit=1.08, demi_tons=0.0,  etendue=0.85, gain=-1.0, souffle=0.00, pause=1.2, tremble=0.0),
-    'chuchote':  dict(debit=1.05, demi_tons=0.0,  etendue=0.90, gain=-8.0, souffle=1.00, pause=1.2, tremble=0.0, chuchote=True),
+    'chuchote':  dict(debit=1.05, demi_tons=-0.5, etendue=0.90, gain=-7.0, souffle=0.50, pause=1.2, tremble=0.0),
     'murmure':   dict(debit=1.06, demi_tons=-0.5, etendue=0.85, gain=-6.0, souffle=0.55, pause=1.2, tremble=0.0),
 }
 
@@ -107,7 +106,7 @@ def diriger(qui, texte, humeur=None, note=None):
 def _socle(texte, modele, duree, variabilite, out):
     subprocess.run(['python3', '-m', 'piper', '-m', f'{VOICE_DIR}/{modele}/{modele}.onnx', '-f', out,
                     '--length-scale', f'{duree:.3f}', '--noise-scale', f'{variabilite:.3f}',
-                    '--noise-w-scale', '0.8', '--sentence-silence', '0.0'],
+                    '--noise-w-scale', '0.6', '--sentence-silence', '0.0'],
                    input=texte.encode(), check=True, stderr=subprocess.DEVNULL)
     w = wave.open(out)
     x = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float64) / 32768
@@ -120,72 +119,73 @@ def _socle(texte, modele, duree, variabilite, out):
     return x, fs
 
 
-# ---------------------------------------------------------------- 4-5-7. identité + jeu
-def _transformer(x, fs, ident, emo, question, groupe_final, rng):
-    f0, t = pyworld.harvest(x, fs, frame_period=FRAME, f0_floor=60, f0_ceil=500)
-    sp = pyworld.cheaptrick(x, f0, t, fs)
-    ap = pyworld.d4c(x, f0, t, fs)
-    n = len(f0)
-    v = f0 > 0
-    # --- hauteur : identité du personnage + jeu émotionnel
-    if v.sum() > 3:
-        lf = np.log(np.where(v, f0, 1.0))
-        moy = lf[v].mean()
-        cible = np.log(ident['f0']) + emo['demi_tons'] * np.log(2) / 12
-        lf2 = cible + ident['etendue'] * emo['etendue'] * (lf - moy)
-        tt = np.arange(n) * FRAME / 1000
-        lf2 += -np.log(2) / 12 * 1.2 * (tt / max(tt[-1], 0.1))         # déclinaison naturelle
-        if question:                                                   # montée interrogative
-            idx = np.where(v)[0]
-            fin = idx[-1]
-            deb = max(idx[0], fin - int(280 / FRAME))
-            lf2[deb:fin + 1] += np.linspace(0, 4.5, fin + 1 - deb) * np.log(2) / 12
-        elif groupe_final:                                             # chute de fin d'énoncé
-            idx = np.where(v)[0]
-            fin = idx[-1]
-            deb = max(idx[0], fin - int(220 / FRAME))
-            lf2[deb:fin + 1] -= np.linspace(0, 2.0, fin + 1 - deb) * np.log(2) / 12
-        trem = emo['tremble']
-        vib = ident.get('vibrato')
-        mod = np.zeros(n)
-        if trem:
-            mod += trem * np.sin(2 * np.pi * 6.0 * tt + rng.uniform(0, 6))
-        if vib:
-            mod += vib[1] * np.sin(2 * np.pi * vib[0] * tt)
-        if ident['raucite']:
-            mod += ident['raucite'] * np.convolve(rng.standard_normal(n), np.ones(3) / 3, 'same')
-        f0 = np.where(v, np.exp(lf2) * (1 + mod), 0.0)
-    if emo.get('chuchote'):
-        f0 = np.zeros_like(f0)
-    # --- conduit vocal (formants) : déformation de l'axe des fréquences
-    a = ident['conduit']
-    nb = sp.shape[1]
-    src = np.arange(nb)
-    sp = np.array([np.interp(src / a, src, row, right=row[-1] * 0.3) for row in sp])
-    # --- souffle
-    b = min(0.95, ident['souffle'] + emo['souffle'])
-    ap = ap ** (1 - b) if b > 0 else ap
-    if emo.get('chuchote'):
-        ap = np.ones_like(ap)
-    # --- énergie
-    sp *= 10 ** (emo['gain'] / 10)
-    # --- 7. resynthèse directe à 44,1 kHz avec extension de bande
-    fft = 2048
-    nb2 = fft // 2 + 1
-    f_src = np.linspace(0, fs / 2, nb)
-    f_out = np.linspace(0, SR / 2, nb2)
-    nyq = fs / 2 * 0.96
-    sp2 = np.empty((n, nb2))
-    ap2 = np.ones((n, nb2))
-    ref_band = (f_src > nyq * 0.6) & (f_src < nyq)
-    for i in range(n):
-        sp2[i] = np.interp(f_out, f_src, sp[i])
-        ap2[i] = np.interp(f_out, f_src, ap[i])
-        hi = f_out > nyq
-        lvl = sp[i, ref_band].mean() * 0.25 * ident['air']
-        sp2[i, hi] = lvl * np.exp(-(f_out[hi] - nyq) / 2600)
-        ap2[i, hi] = np.maximum(ap2[i, hi], 0.85)
-    y = pyworld.synthesize(np.ascontiguousarray(f0), np.ascontiguousarray(sp2), np.ascontiguousarray(ap2), SR, FRAME)
+def _zone_parole(x, fs):
+    """Garde la zone où l'on parle vraiment : supprime le bredouillement que le socle produit parfois avant/après."""
+    h = int(0.02 * fs)
+    e = np.array([np.sqrt(np.mean(x[i:i + h] ** 2)) for i in range(0, max(1, len(x) - h), h)])
+    if not len(e) or e.max() <= 0:
+        return x, 1.0
+    on = e > 0.12 * e.max()
+    idx = np.where(on)[0]
+    # ignore les îlots isolés (< 60 ms) loin du corps de la phrase
+    deb, fin = idx[0], idx[-1]
+    while fin - deb > 4 and on[deb:deb + 3].sum() < 2:
+        deb += 1 + np.argmax(on[deb + 1:])
+    while fin - deb > 4 and on[fin - 2:fin + 1].sum() < 2:
+        fin = deb + np.where(on[deb:fin])[0][-1]
+    a, b = max(0, (deb - 3) * h), min(len(x), (fin + 4) * h)
+    garde = np.sum(x[a:b] ** 2) / (np.sum(x ** 2) + 1e-12)
+    y = x[a:b].copy()
+    r = min(len(y) // 4, int(0.015 * fs))
+    if r > 1:
+        y[:r] *= np.linspace(0, 1, r); y[-r:] *= np.linspace(1, 0, r)
+    return y, garde
+
+
+def _socle_robuste(texte, modele, duree, out):
+    """Plusieurs prises du socle ; on garde la plus propre (durée plausible, pas d'énergie parasite)."""
+    lettres = len(re.sub(r'[^a-zA-Zà-ÿ]', '', texte))
+    attendu = lettres * 0.072 * duree + 0.25
+    meilleur, score_m = None, 1e9
+    for essai in range(4):
+        x, fs = _socle(texte, modele, duree, 0.50, out)
+        y, garde = _zone_parole(x, fs)
+        d = len(y) / fs
+        score = abs(np.log(d / attendu)) * 2 + (1 - garde) * 4
+        if score < score_m:
+            meilleur, score_m = (y, fs), score
+        if abs(np.log(d / attendu)) < 0.35 and garde > 0.97:
+            break
+    return meilleur
+
+
+# ---------------------------------------------------------------- 4-5. identité + jeu (version intelligible)
+# La resynthèse WORLD (v3) dégradait les consonnes : mots incompréhensibles. Abandonnée.
+# On ne garde que des traitements qui ne touchent pas l'articulation :
+#  - hauteur : décalage léger par rubberband en préservant les formants ;
+#  - timbre : égalisation douce (grave/aigu) propre à chaque personnage ;
+#  - débit et variabilité : pilotés directement dans le socle (length/noise scale).
+TIMBRE = {  # (décalage de hauteur en demi-tons, gain grave dB @150 Hz, gain aigu dB @5 kHz)
+    'nathan': (0.0, 0.0, 1.0), 'futur': (-1.0, 1.5, -1.0), 'gabriel': (-2.5, 3.0, -2.5),
+    'radio': (0.5, -2.0, 0.0), 'elise': (0.0, 0.0, 1.0), 'maya': (-2.0, 2.0, 0.5),
+}
+
+
+def _transformer(x, fs, qui, emo, out_tmp):
+    demi, grave, aigu = TIMBRE[qui]
+    demi += emo['demi_tons'] * 0.5
+    chain = []
+    if abs(demi) >= 0.2:
+        chain.append(f'rubberband=pitch={2 ** (demi / 12):.5f}:formant=preserved:pitchq=quality')
+    chain.append(f'bass=g={grave}:f=150,treble=g={aigu}:f=5000,aresample={SR}')
+    w = wave.open(out_tmp, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(fs)
+    w.writeframes((np.clip(x, -1, 1) * 32767).astype(np.int16).tobytes()); w.close()
+    out = out_tmp + '.o.wav'
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', out_tmp, '-af', ','.join(chain), '-ac', '1', out], check=True)
+    w = wave.open(out)
+    y = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
+    w.close()
+    os.remove(out_tmp); os.remove(out)
     return y
 
 
@@ -234,7 +234,7 @@ def _groupes(texte):
 
 
 # ---------------------------------------------------------------- API
-CACHE_VERSION = 'mv3'
+CACHE_VERSION = 'mv5-robuste'
 
 
 def voix(qui, texte, emotion='neutre', outdir='/tmp', vitesse=1.0, seed=None):
@@ -258,8 +258,8 @@ def voix(qui, texte, emotion='neutre', outdir='/tmp', vitesse=1.0, seed=None):
     for i, (g, kind) in enumerate(groupes):
         duree = ident['debit'] * emo['debit'] / vitesse
         variab = 0.62 + 0.25 * min(1.5, abs(emo['etendue'] - 1) * 2)
-        x, fs = _socle(g, ident['socle'], duree, variab, fn + f'.{i}.tmp.wav')
-        y = _transformer(x, fs, ident, emo, question=g.endswith('?'), groupe_final=(kind == 'fin'), rng=rng)
+        x, fs = _socle_robuste(g, ident['socle'], duree, fn + f'.{i}.tmp.wav')
+        y = _transformer(x, fs, qui, emo, fn + f'.{i}.t.wav')
         parts.append(y.astype(np.float32))
         if i < len(groupes) - 1:
             p = {'suspension': 0.42, 'phrase': 0.22}.get(kind, 0.2) * emo['pause'] * rng.uniform(0.85, 1.2)
