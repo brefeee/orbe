@@ -4,8 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p build/frames out
-rm -f build/frames/*.jpg
-node render.js build/frames --workers=${WORKERS:-3} ${CONFIG:+--config=$CONFIG}
+if [ -z "${SKIP_RENDER:-}" ]; then
+  rm -f build/frames/*.jpg
+  node render.js build/frames --workers=${WORKERS:-3} ${CONFIG:+--config=$CONFIG}
+fi
 python3 audio.py build/cues.json build/audio.wav
 ffmpeg -v error -y -framerate 30 -i build/frames/f_%05d.jpg -i build/audio.wav \
   -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -profile:v high -level 4.2 \

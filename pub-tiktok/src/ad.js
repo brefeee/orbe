@@ -595,7 +595,7 @@ function sceneGame(t) {
     const kp = st.bk.obj.position.clone(); kp.y = 1.9;
     const [x, y] = project(kp);
     const k = clamp(dt / 0.14), e = clamp((dt - 0.36) / 0.12);
-    badge('ÉCHEC !', x, y - 30, 54, RED, lerp(1.8, 1, back(k)) * (1 + e * 0.2), 1 - e);
+    badge('ÉCHEC !', x, Math.max(640, y - 30), 54, RED, lerp(1.8, 1, back(k)) * (1 + e * 0.2), 1 - e);
   }
   if (t > 7.0 && t < 7.55) {
     const dt = t - 7.0, k = clamp(dt / 0.14), e = clamp((dt - 0.42) / 0.12);
@@ -928,7 +928,6 @@ function sceneCoins(t) {
   const u = t - 18.5;
   uiBackground(t, '#4a3200', '#160f02', '#050301');
   embers(t, 'rgba(255,200,60,1)');
-  caption(t, 18.52, 20.9, [{ text: 'GAGNE DES', size: 80 }, { text: '*RÉCOMPENSES*', size: 124 }, { text: 'selon tes performances', size: 54, w: 800, color: '#ffeec2', delay: 0.1 }], 270, { stagger: 0.09 });
   const C = [540, 905];
   // rayons
   ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.translate(...C); ctx.rotate(u * 0.5);
@@ -956,6 +955,7 @@ function sceneCoins(t) {
   coin(0, 0, 165, Math.cos(u * 3.2));
   ctx.restore();
   for (let i = 0; i < 6; i++) { const tw = (u * 1.6 + hash(i)) % 1; star4(C[0] + (hash(i + 4) - 0.5) * 420, C[1] + (hash(i + 8) - 0.5) * 380, 22 * Math.sin(tw * Math.PI), Math.sin(tw * Math.PI), '#fff3c4'); }
+  caption(t, 18.52, 20.9, [{ text: 'GAGNE DES', size: 80 }, { text: '*RÉCOMPENSES*', size: 124 }, { text: 'selon tes performances', size: 54, w: 800, color: '#ffeec2', delay: 0.1 }], 270, { stagger: 0.09 });
   // compteur
   const pk = clamp((u - 0.25) / 0.25);
   if (pk > 0) {
