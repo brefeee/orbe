@@ -14,7 +14,7 @@ Vidéo finale : **`out/pub_tiktok_echecs.mp4`**. Elle est en 1080×1920 (9:16), 
 | 15,5–18,5 s | Le robot passe de FACILE à CAUCHEMAR. Les niveaux intermédiaires ne sont ni nommés ni comptés | Bots à plusieurs niveaux |
 | 18,5–21 s | Pièces d'or et compteur, « selon tes performances » | Monnaie et récompenses |
 | 21–23 s | Pièces dorées, « Achats facultatifs en Robux » | Objets exclusifs |
-| 23–28 s | « À TOI DE JOUER », bouton « JOUE MAINTENANT », « Disponible sur Roblox », « Lien en bio » | Appel à l'action |
+| 23–28 s | « À TOI DE JOUER », bouton « JOUE MAINTENANT », « Disponible sur Roblox », « Commente « ÉCHEC » pour recevoir le nom du jeu » | Appel à l'action |
 
 Les visuels sont créés de toutes pièces : le dépôt ne contient aucune capture du jeu. La musique et les bruitages sont synthétisés par `audio.py`, donc aucun son n'est soumis à une licence.
 
@@ -29,7 +29,7 @@ CONFIG=cfg.json ./build.sh                   # ajoute le nom du jeu sur l'écran
 node render.js /tmp/apercu --times=4.2,8.5   # quelques images d'aperçu
 ```
 
-Options de `cfg.json` : `gameName` (texte), `platform` (« Roblox » par défaut), `linkInBio` (true/false).
+Options de `cfg.json` : `gameName` (texte), `platform` (« Roblox » par défaut), `commentWord` (mot à commenter, « ÉCHEC » par défaut ; vide pour masquer).
 
 - `src/ad.js` : scènes 3D (three.js), interface, sous-titres, transitions et repères sonores.
 - `render.js` : rendu image par image dans Chromium sans affichage.

@@ -7,7 +7,7 @@ const W = 1080, H = 1920, FPS = 30, DURATION = 28;
 const CFG = Object.assign({
   gameName: '',          // nom du jeu affiché sur l'écran final (laisser vide pour ne rien afficher)
   platform: 'Roblox',
-  linkInBio: true,
+  commentWord: 'ÉCHEC',  // mot à commenter pour recevoir le nom du jeu (vide = rien)
 }, window.AD_CONFIG || {});
 
 const GOLD = '#FFC93C', CYAN = '#3FE0FF', RED = '#FF3B4E', GREEN = '#45F07A';
@@ -1030,7 +1030,7 @@ function sceneCta(t) {
   const bk = clamp((u - 0.75) / 0.25);
   if (bk > 0) {
     const beat = Math.max(0, Math.cos((t % 0.5) / 0.5 * Math.PI * 2)) * 0.035 + (t > 27.5 ? 0.12 * Math.exp(-(t - 27.5) * 6) : 0);
-    ctx.save(); ctx.translate(540, 1290); const sc = lerp(0.3, 1, back(bk)) * (1 + beat); ctx.scale(sc, sc); ctx.globalAlpha = clamp(bk * 3);
+    ctx.save(); ctx.translate(540, 1150); const sc = lerp(0.3, 1, back(bk)) * (1 + beat); ctx.scale(sc, sc); ctx.globalAlpha = clamp(bk * 3);
     rr(-360, -82, 720, 164, 82);
     const g = ctx.createLinearGradient(0, -82, 0, 82); g.addColorStop(0, '#ffe680'); g.addColorStop(0.5, '#ffc12e'); g.addColorStop(1, '#ff9a00');
     ctx.fillStyle = g; ctx.shadowColor = '#ffb000'; ctx.shadowBlur = 70; ctx.fill(); ctx.shadowBlur = 0;
@@ -1043,10 +1043,29 @@ function sceneCta(t) {
     ctx.restore();
   }
   const pk = clamp((u - 1.15) / 0.25);
-  if (pk > 0) txt('DISPONIBLE SUR ' + CFG.platform.toUpperCase(), 540, 1428, 44, { scale: lerp(1.6, 1, back(pk)), alpha: clamp(pk * 3), w: 900, ls: 5, strokeW: 8 });
-  if (CFG.linkInBio) {
+  if (pk > 0) txt('DISPONIBLE SUR ' + CFG.platform.toUpperCase(), 540, 1275, 42, { scale: lerp(1.6, 1, back(pk)), alpha: clamp(pk * 3), w: 900, ls: 5, strokeW: 8 });
+  if (CFG.commentWord) {
     const lk = clamp((u - 1.45) / 0.25);
-    if (lk > 0) txt('LIEN EN BIO  ↓', 540, 1500 + Math.abs(Math.sin(u * Math.PI * 2)) * -10, 40, { color: GOLD, scale: lerp(1.6, 1, back(lk)), alpha: clamp(lk * 3), w: 900, ls: 3, strokeW: 8 });
+    if (lk > 0) {
+      const bob = Math.sin(u * Math.PI * 2) * 6;
+      ctx.save(); ctx.translate(540, 1395 + bob); const sc = lerp(1.7, 1, back(lk)); ctx.scale(sc, sc); ctx.globalAlpha = clamp(lk * 3);
+      // bulle de commentaire
+      ctx.font = F(58); ctx.letterSpacing = '0px';
+      const label = 'COMMENTE « ' + CFG.commentWord.toUpperCase() + ' »';
+      const w = ctx.measureText(label).width + 150, h = 112;
+      rr(-w / 2, -h / 2, w, h, 30); ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(255,255,255,0.6)'; ctx.shadowBlur = 40; ctx.fill(); ctx.shadowBlur = 0;
+      ctx.beginPath(); ctx.moveTo(-w / 2 + 60, h / 2 - 2); ctx.lineTo(-w / 2 + 50, h / 2 + 30); ctx.lineTo(-w / 2 + 95, h / 2 - 2); ctx.closePath(); ctx.fill();
+      // icône bulle
+      ctx.save(); ctx.translate(-w / 2 + 58, 0); ctx.fillStyle = RED;
+      ctx.beginPath(); ctx.ellipse(0, -4, 30, 25, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-14, 14); ctx.lineTo(-22, 32); ctx.lineTo(4, 18); ctx.fill();
+      ctx.fillStyle = '#fff'; for (const dx of [-12, 0, 12]) { ctx.beginPath(); ctx.arc(dx, -4, 4, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+      txt(label, 40, 3, 58, { color: '#14100a', stroke: false, w: 900 });
+      ctx.restore();
+    }
+    const sk = clamp((u - 1.75) / 0.25);
+    if (sk > 0) txt('pour recevoir le nom du jeu', 540, 1502, 44, { color: GOLD, scale: lerp(1.5, 1, back(sk)), alpha: clamp(sk * 3), w: 800, strokeW: 8 });
   }
 }
 
@@ -1128,7 +1147,7 @@ function buildCues() {
   // exclusifs
   add(21.05, 'shine', 1.0); add(21.9, 'sparkle', 0.7);
   // fin
-  add(23.0, 'impact', 1.0, 1.1); add(23.75, 'button', 0.9); add(24.15, 'pop', 0.5); add(24.45, 'pop', 0.5); add(27.5, 'final', 1.1);
+  add(23.0, 'impact', 1.0, 1.1); add(23.75, 'button', 0.9); add(24.15, 'pop', 0.5); add(24.45, 'ding', 0.8); add(24.75, 'pop', 0.5); add(27.5, 'final', 1.1);
   return c.sort((a, b) => a.t - b.t);
 }
 const MUSIC = { bpm: 120, duration: DURATION, drops: [3.0, 23.0], stops: [[7.62, 8.0], [17.45, 17.7], [22.55, 23.0]], end: 27.5 };
