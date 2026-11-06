@@ -947,8 +947,12 @@ def shot_car(t, dur, T, f, kw):
     sp = speaker_at(T)
     bust(img, 400, 250, 0.95, 'elise', mouth=m('elise', f), blink=blink_at(T, 5), light=(lk, lk * 0.8, lk * 0.6), look=(-0.3 if sp != 'nathan' else 1, 0))
     bust(img, 880, 260, 0.95, 'nathan', mouth=m('nathan', f), blink=blink_at(T, 6), light=(lk * 0.85, lk * 0.7, lk * 0.55), look=(-1 if sp == 'elise' else 0, 0.5))
-    a = math.sin(T * 3.0)  # essuie-glaces
-    d.line([(640, H), (640 + 600 * math.sin(a), H - 600 * abs(math.cos(a)))], fill=(10, 10, 10), width=10)
+    # essuie-glace : fin, translucide, flou (vu à travers le pare-brise mouillé)
+    a = math.sin(T * 3.0)
+    lay = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(lay).line([(640, H + 40), (640 + 560 * math.sin(a), H + 40 - 560 * abs(math.cos(a)))], fill=90, width=4)
+    lay = lay.filter(ImageFilter.GaussianBlur(1.5))
+    img = Image.composite(Image.new('RGB', (W, H), (8, 8, 10)), img, lay)
     if 'Ok.' == tl.sub_at(T) or (T - tl.shots[[s[2] for s in tl.shots].index('car')][0]) < 3.5:
         pass
     return img
