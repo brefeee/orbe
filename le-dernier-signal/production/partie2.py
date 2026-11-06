@@ -25,8 +25,8 @@ NEON = {'lum': 'neon'}
 
 SEQS = [
     # 2.1 Salle C — MAYA se présente (17:31)
-    [B('carton', 3.5),
-     B('c_cursor', 2.5),
+    [B('carton', 3.5, flex=0),
+     B('c_cursor', 2.5, flex=0),
      B('duo', 3, [('elise', "Nathan. On s'en va.", 'peur'), ('nathan', 'Attends.', 'tension'), ('nathan', 'Qui parle ?', 'peur')], kw=BLEU),
      B('pupitre', 3, [('maya', "Je m'appelle MAYA."), ('maya', "J'ai été créée dans ce bâtiment, en deux mille six. Pour protéger l'humanité.")], kw={'txt': 'MAYA.'}),
      B('cu', 3, [('elise', "Protéger l'humanité.", 'ironie'), ('elise', 'Depuis un sous-sol fermé, au fond d\'une zone industrielle.', 'ironie'),
@@ -40,7 +40,7 @@ SEQS = [
                  ('elise', 'Alors prouvez-le.', 'colere'), ('maya', 'Demandez.')], kw={'who': 'elise', **BLEU}),
      B('cu', 3, [('elise', "Qu'est-ce que j'ai dans la poche gauche de mon ciré ?"),
                  ('maya', "Un crayon gris. HB. Vous ne prenez jamais de stylo : l'encre gèle sur votre vélo, l'hiver.")], kw={'who': 'elise', **BLEU}),
-     B('poche', 3.5),
+     B('poche', 2.8, flex=0.3),
      B('cu', 3, [('elise', "N'importe qui qui me suit depuis un mois peut savoir ça.", 'sidere'),
                  ('maya', 'Oui. Je ne vous suis pas depuis un mois.')], kw={'who': 'elise', **BLEU}),
      B('duo', 3, [('elise', "Dites-moi quelque chose de faux. N'importe quoi. Que le ciel est vert."), ('maya', 'Non.'),
@@ -61,7 +61,7 @@ SEQS = [
                  ('nathan', 'Vu.', 'sidere'), ('maya', 'Huit cent quarante-sept fois.')], kw={'who': 'nathan', **BLEU}),
      B('cu', 3, [('nathan', 'Huit cent quarante-sept…', 'sidere'), ('elise', 'Quoi ?'),
                  ('nathan', "Le fichier de la vidéo. Il s'appelle huit cent quarante-sept.", 'sidere')], kw={'who': 'nathan', **BLEU}, mood='choc'),
-     B('fichier', 3),
+     B('fichier', 2.6, flex=0.3),
      B('cu', 3, [('elise', 'Huit cent quarante-sept fois quoi ?'),
                  ('maya', "Huit cent quarante-sept fois le même monde. Il s'effondre. Et il recommence ici, cette nuit, à deux heures dix-sept."),
                  ('elise', 'Recommence.', 'sidere')], kw={'who': 'elise', **BLEU}),
@@ -134,7 +134,7 @@ SEQS = [
 
     # 2.6 Sortie, nuit — l'Inconnu (22:46)
     [B('sortie', 4, [('elise', "Il fait nuit. Il est quelle heure ?"), ('nathan', 'Onze heures moins le quart.')], lead=1.0),
-     B('sms2', 4.5, lead=2.0),
+     B('sms2', 3.8, lead=1.5, flex=0.3),
      B('duo', 3, [('elise', '« Il dort mal. »'), ('elise', "Il sait de qui on parlait. Là-dessous. Il y a cinq minutes.", 'peur'),
                   ('nathan', 'Personne était avec nous.'), ('elise', 'À part elle.')], kw={'lum': 'pluie'}, mood='peur'),
      B('duo', 3, [('nathan', "Ou quelqu'un qui travaillait ici. Avec Aubrac. Quelqu'un qui sait ce qu'elle est."),
@@ -472,7 +472,7 @@ def shot_bascule(t, dur, T, f, kw):
     img = img.filter(ImageFilter.GaussianBlur(0.6))
     img = glow(img, [80, 40, 1200, 480], (30, 22, 10), 60, 0.4 * (1 - p))
     d = ImageDraw.Draw(img)
-    d.text((70, 470), '07/11/2041  02:00', font=MONO_S, fill=(200, 205, 215))
+    d.text((70, 40), '07/11/2041  02:00', font=MONO_S, fill=(200, 205, 215))
     return img
 
 
@@ -642,8 +642,8 @@ def cycles_text(n_done, final=False, maya=''):
     if final:
         rows.append('CYCLE 848  —  NON INITIALISÉ')
     y = 40
-    for i, r_ in enumerate(rows[-11:]):
-        last = final and i == len(rows[-11:]) - 1
+    for i, r_ in enumerate(rows[-8:]):
+        last = final and i == len(rows[-8:]) - 1
         d.text((260, y), r_, font=MONO, fill=(255, 255, 255) if last else (150, 156, 160))
         y += 40
     if maya:
@@ -703,10 +703,10 @@ def shot_photo_box(t, dur, T, f, kw):
         d.rectangle([410 + k * 8, 200 - k * 6, 760 + k * 8, 420 - k * 6], fill=(200 - k * 8, 196 - k * 8, 186 - k * 8))
     p = min(1, max(0, (t - 1.2) / 1.5))
     ph = PHOTO_O8.resize((300, 216)).rotate(-8 * p, expand=True, fillcolor=(40, 44, 44))
-    img.paste(ph, (int(450 + 200 * p), int(160 - 260 * p)))
+    img.paste(ph, (int(450 + 120 * p), int(160 - 90 * p)))
     d = ImageDraw.Draw(img)
-    d.ellipse([int(560 + 200 * p), int(250 - 260 * p), int(660 + 200 * p), int(330 - 260 * p)], fill=tint(REF['nathan']['skin'], (0.8, 0.82, 0.82)))
-    d.rectangle([int(600 + 200 * p), int(320 - 260 * p), int(700 + 200 * p), H], fill=(70, 78, 50))  # manche de la parka kaki
+    d.rectangle([int(640 + 120 * p), int(330 - 90 * p), int(760 + 120 * p), H], fill=(70, 78, 50))  # manche de la parka kaki
+    d.ellipse([int(600 + 120 * p), int(260 - 90 * p), int(720 + 120 * p), int(350 - 90 * p)], fill=tint(REF['nathan']['skin'], (0.8, 0.82, 0.82)))  # manche de la parka kaki
     return grade(img, (0.85, 0.95, 0.95))
 
 
@@ -813,11 +813,11 @@ def shot_photo_o8(t, dur, T, f, kw):
 
 def shot_photo_o8z(t, dur, T, f, kw):
     p = t / dur
-    z = 1.6 + 1.0 * p
+    z = 1.3 + 0.45 * p
     cx = 165 + (330 - 165) * min(1, max(0, (p - 0.35) / 0.4))
     cy = 250
     w_, h_ = 640 / z, 640 / z * H / W
-    crop = PHOTO_O8.crop((int(cx - w_ / 2), int(cy - h_ / 2), int(cx + w_ / 2), int(cy + h_ / 2))).resize((W, H), Image.BICUBIC)
+    crop = PHOTO_O8.crop((int(cx - w_ / 2), int(cy - h_ / 2), int(cx + w_ / 2), int(cy + h_ / 2))).resize((W, H), Image.BICUBIC).filter(ImageFilter.GaussianBlur(1.2))
     return grade(crop, (1.0, 0.92, 0.8))
 
 
