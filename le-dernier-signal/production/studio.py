@@ -36,6 +36,12 @@ REF = {
                   top=(48, 46, 44), top2=(70, 66, 60), legs=(40, 40, 40)),
     'gabriel': dict(skin=(214, 176, 158), hair=(165, 165, 165), eyes=(150, 175, 200),
                     top=(30, 38, 62), top2=(225, 218, 200), legs=(95, 70, 50)),
+    # Gabriel en 2010 (36 ans) : cheveux et barbe encore bruns, blouse de labo
+    'gabriel2010': dict(skin=(218, 182, 162), hair=(78, 62, 50), eyes=(150, 175, 200),
+                        top=(225, 228, 230), top2=(60, 70, 90), legs=(60, 60, 66)),
+    # Claire Moreau (1979-2011) : châtain clair, queue-de-cheval, yeux gris-vert, blouse et badge
+    'claire': dict(skin=(226, 200, 182), hair=(150, 112, 74), eyes=(120, 140, 125),
+                   top=(232, 234, 236), top2=(200, 204, 208), legs=(60, 60, 66)),
 }
 
 
@@ -62,7 +68,7 @@ def bust(img, cx, cy, s, who, mouth=0.0, blink=False, hood=False, light=(1, 1, 1
         d.polygon([(cx - 45 * s, cy + 105 * s), (cx + 45 * s, cy + 105 * s), (cx + 20 * s, cy + 420 * s), (cx - 20 * s, cy + 420 * s)], fill=L(r['top2']))
         d.line([(cx - 48 * s, cy + 110 * s), (cx - 30 * s, cy + 420 * s)], fill=L((150, 110, 25)), width=max(1, int(4 * s)))
         d.line([(cx + 48 * s, cy + 110 * s), (cx + 30 * s, cy + 420 * s)], fill=L((150, 110, 25)), width=max(1, int(4 * s)))
-    if who == 'gabriel':
+    if who in ('gabriel', 'gabriel2010'):
         d.polygon([(cx - 55 * s, cy + 105 * s), (cx + 55 * s, cy + 105 * s), (cx + 30 * s, cy + 420 * s), (cx - 30 * s, cy + 420 * s)], fill=L(r['top2']))
     if who == 'nathan':  # cordons du sweat
         d.line([(cx - 25 * s, cy + 115 * s), (cx - 28 * s, cy + 200 * s)], fill=L((200, 200, 200)), width=max(1, int(3 * s)))
@@ -111,9 +117,14 @@ def bust(img, cx, cy, s, who, mouth=0.0, blink=False, hood=False, light=(1, 1, 1
             y = cy + rr.uniform(-95, -50) * s
             d.ellipse([x - 12 * s, y - 12 * s, x + 12 * s, y + 12 * s], fill=hc)
         d.arc([cx - 80 * s, cy - 40 * s, cx - 50 * s, cy + 40 * s], 100, 260, fill=hc, width=max(1, int(5 * s)))
-    elif who == 'gabriel':
+    elif who in ('gabriel', 'gabriel2010'):
         d.chord([cx - 70 * s, cy - 95 * s, cx + 70 * s, cy - 30 * s], 180, 360, fill=hc)
-        d.chord([cx - 62 * s, cy - 10 * s, cx + 62 * s, cy + 95 * s], 0, 180, fill=L((175, 175, 172)))
+        beard = (175, 175, 172) if who == 'gabriel' else (88, 70, 56)
+        d.chord([cx - 62 * s, cy - 10 * s, cx + 62 * s, cy + 95 * s], 0, 180, fill=L(beard))
+    elif who == 'claire':
+        d.chord([cx - 70 * s, cy - 94 * s, cx + 70 * s, cy - 12 * s], 180, 360, fill=hc)
+        d.ellipse([cx + 52 * s, cy - 70 * s, cx + 92 * s, cy - 30 * s], fill=hc)  # queue-de-cheval
+        d.rectangle([cx - 110 * s, cy + 150 * s, cx - 40 * s, cy + 185 * s], fill=L((245, 245, 245)), outline=L((90, 90, 90)))  # badge
     if hood:
         d.arc([cx - 100 * s, cy - 132 * s, cx + 100 * s, cy + 120 * s], 190, 350, fill=L(r['top']), width=max(2, int(16 * s)))
     # sourcils
@@ -133,6 +144,8 @@ def bust(img, cx, cy, s, who, mouth=0.0, blink=False, hood=False, light=(1, 1, 1
             px, py = ex + look[0] * 5 * s, ey + look[1] * 3 * s
             d.ellipse([px - 7 * s, py - 7 * s, px + 7 * s, py + 7 * s], fill=L(r['eyes']))
             d.ellipse([px - 3 * s, py - 3 * s, px + 3 * s, py + 3 * s], fill=(10, 10, 12))
+    if who == 'claire':  # sourire en coin
+        d.arc([cx - 18 * s, cy + 38 * s, cx + 22 * s, cy + 58 * s], 10, 120, fill=L(tint(r['skin'], (0.72, 0.55, 0.55))), width=max(1, int(3 * s)))
     # cernes
     if who in ('nathan', 'futur'):
         for ex in (cx - 30 * s, cx + 30 * s):
@@ -535,3 +548,30 @@ def encode(frames_fn, nframes, out):
         p.stdin.write(frames_fn(f).tobytes())
     p.stdin.close()
     p.wait()
+
+
+def encode_chunks(frames_fn, nframes, out, workdir, chunk=1200):
+    """Rendu par morceaux de `chunk` images : un redémarrage de la machine ne fait perdre
+    que le morceau en cours (les morceaux finis sont gardés et sautés à la reprise)."""
+    os.makedirs(workdir, exist_ok=True)
+    parts = []
+    for k, a in enumerate(range(0, nframes, chunk)):
+        b = min(nframes, a + chunk)
+        fn = os.path.join(workdir, f'morceau_{k:03d}.mp4')
+        parts.append(fn)
+        if os.path.exists(fn):
+            continue
+        tmp = fn + '.tmp.mp4'
+        p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24',
+                              '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', '-c:v', 'libx264', '-preset', 'medium',
+                              '-crf', '19', '-pix_fmt', 'yuv420p', tmp], stdin=subprocess.PIPE)
+        for f in range(a, b):
+            p.stdin.write(frames_fn(f).tobytes())
+        p.stdin.close()
+        p.wait()
+        os.replace(tmp, fn)
+        print(f'morceau {k} ({a}-{b}) ok', flush=True)
+    lst = os.path.join(workdir, 'liste.txt')
+    with open(lst, 'w') as fh:
+        fh.writelines(f"file '{os.path.abspath(x)}'\n" for x in parts)
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', out], check=True)

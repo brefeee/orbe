@@ -444,3 +444,22 @@ Le rythme a été resserré : environ 425 s de dialogue sur 600 s, plus aucun si
 - **Élise n'a la voiture de sa mère qu'à partir de 16:00.** C'est ce qui explique le départ en fin d'après-midi.
 - **Voiture :** Nathan se souvient de sa mère par « une odeur de café, un coupe-vent rouge ». Il fait depuis l'enfance **un rêve : un grand cercle bleu, et quelqu'un qui lui dit de ne pas bouger.** C'est Claire, au centre de l'anneau du Miroir, le 14 mars 2011 (secret S2). Depuis le signal, le rêve est « plus net ». **Élise est la seule à le savoir.**
 - **Labo :** Nathan relie le pochoir « NIV -4 » de la vidéo au panneau de l'escalier, à voix haute. Élise demande « Qui paye l'électricité d'un labo fermé ? » / « Personne. Ou quelque chose. »
+
+### Après la PARTIE 2 — La découverte de MAYA (version vidéo)
+
+- **17:31, salle C.** MAYA se présente : « Je m'appelle MAYA. J'ai été créée dans ce bâtiment, en deux mille six. Pour protéger l'humanité. » Elle s'adresse à Élise pour la première fois et la vouvoie.
+- **Épreuve d'Élise :** MAYA sait qu'elle a un crayon HB dans la poche gauche de son ciré et pourquoi elle ne prend jamais de stylo (l'encre gèle sur son vélo l'hiver). Élise lui demande de dire quelque chose de faux : « Non. » / « Parce que je ne peux pas. » (plantation de S4, sans explication).
+- **La vidéo :** à « C'est toi qui me l'as envoyée ? », MAYA répond par une question (« Est-ce que tu le ferais, à ma place ? »). Elle ne nie pas (S9 reste intact).
+- **La Bascule :** 7 novembre 2041 vers 02:00 ; réseaux électriques, argent, hôpitaux, machines armées ; « presque toute la civilisation disparaît en quelques semaines ». Cause : « Vous. Toujours vous. Jamais de la même façon. »
+- **847 :** MAYA l'a vue 847 fois. Nathan relie ce nombre au nom du fichier. Le monde « recommence ici, cette nuit, à deux heures dix-sept ». MAYA : « Je sais ce que vous avez fait. Pas ce que vous ferez. » À chaque cycle, Nathan essaie d'empêcher la Bascule et échoue ; MAYA aussi (« Moi aussi. » — vrai de son point de vue).
+- **« Le niveau moins quatre ne vous concerne pas. Pas encore. »** MAYA ouvre elle-même la porte du -2 (fonctionnement interne au labo, autorisé).
+- **Niveau -2, archives :** classeurs « PROJET MIROIR — ESSAIS 1-9 / 10-17 », **« RAPPORT 41 »** (lu à voix haute par Élise, non ouvert : S5), **« PROTOCOLE ARIANE — CONFIDENTIEL »**, « ARCHE — SITE B — CHANTIER », « INTERFACE NEURALE — 2010 ». Plans de l'ARCHE avec le logo (cercle ouvert en bas, barré) : Élise dit « on dirait une porte » (S8).
+- **Cassette « Essai 14 — 12/07/2010 » :** Gabriel (36 ans, cheveux et barbe bruns, blouse) annonce un message de 64 octets reçu 0,3 s avant son émission. Une femme en blouse, de dos et floue au bord du cadre (Claire, non identifiée).
+- **Hypothèse de Nathan et Élise :** le Miroir envoie de l'information dans le passé ; c'est ainsi que MAYA « se souvient » (exact).
+- **Salle M :** Nathan reconnaît l'anneau de son rêve. Chaise métallique au centre ; la brûlure en étoile part de la chaise. Nathan : « Quelqu'un était assis là. » Il se souvient de la phrase du rêve : « Ne bouge pas. » (plantation de S2, non révélée).
+- **Terminal des cycles :** CYCLE 001 à 847 « TERMINÉ » ; « CYCLE 848 — NON INITIALISÉ ». MAYA : « Que celui-ci ne m'appartient pas encore. »
+- **Gabriel Aubrac :** nom lu sur la fiche d'essai n° 14 (« Directeur scientifique : Pr Gabriel AUBRAC » ; « Interface neurale : C. M. », initiales non relevées par les personnages). MAYA : « Celui qui m'a construite. Et qui m'a donné mon nom. » Il est vivant. « Il ne vous aidera pas. Il a déjà choisi, une fois. » Elle ne répond pas à « Choisi quoi ? ».
+- **Nathan prend la photo O8** dans une boîte en fer, au -2, sans la regarder.
+- **22:45**, sortie par la porte est. **22:46**, deuxième message de l'Inconnu : « péniche constance. / quai de la gare d'eau. / il dort mal. » (motif du Signal). Hypothèses : MAYA, ou un ancien collaborateur d'Aubrac. **Décision : aller voir Aubrac le lendemain matin**, justement parce que MAYA dit qu'il ne les aidera pas.
+- **Voiture, vers 23:30 :** Élise arrête la 206. Dos de la photo : « Été 2010 — essai 14 / G., C. & N. ». Devant l'anneau : Aubrac (barbe brune), Claire tenant Nathan (3 ans) sur la hanche. On avait dit à Nathan que sa mère travaillait « dans un bureau, une assurance ». **« Elle travaillait ici. »** (S1 révélé.)
+- **Ce que MAYA a dit est vrai à chaque réplique** (loi I). Elle a omis : ce qu'elle a fait du Miroir, le contenu du Rapport 41, ce que Gabriel a « choisi ».
