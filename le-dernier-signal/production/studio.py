@@ -70,7 +70,7 @@ def bust(img, cx, cy, s, who, mouth=0.0, blink=False, hood=False, light=(1, 1, 1
         d.line([(cx + 48 * s, cy + 110 * s), (cx + 30 * s, cy + 420 * s)], fill=L((150, 110, 25)), width=max(1, int(4 * s)))
     if who in ('gabriel', 'gabriel2010'):
         d.polygon([(cx - 55 * s, cy + 105 * s), (cx + 55 * s, cy + 105 * s), (cx + 30 * s, cy + 420 * s), (cx - 30 * s, cy + 420 * s)], fill=L(r['top2']))
-    if who == 'nathan':  # cordons du sweat
+    if who == 'nathan' and r.get('cordons', True):  # cordons du sweat (pas sur un pull)
         d.line([(cx - 25 * s, cy + 115 * s), (cx - 28 * s, cy + 200 * s)], fill=L((200, 200, 200)), width=max(1, int(3 * s)))
         d.line([(cx + 25 * s, cy + 115 * s), (cx + 28 * s, cy + 200 * s)], fill=L((200, 200, 200)), width=max(1, int(3 * s)))
     # cou
@@ -368,7 +368,8 @@ class Mix:
 
     # acoustique des lieux : (durée de réverbération s, niveau de réverbération, prédélai s)
     ROOMS = {'studio': (0.35, 0.10, 0.008), 'voiture': (0.12, 0.05, 0.003), 'exterieur': (0.25, 0.04, 0.02),
-             'labo': (1.4, 0.22, 0.025), 'couloir': (1.1, 0.18, 0.02), 'video': (0.5, 0.12, 0.01), 'sec': None}
+             'labo': (1.4, 0.22, 0.025), 'couloir': (1.1, 0.18, 0.02), 'video': (0.5, 0.12, 0.01), 'sec': None,
+             'peniche': (0.45, 0.12, 0.006)}
 
     @staticmethod
     def _ir(rt, seed):
