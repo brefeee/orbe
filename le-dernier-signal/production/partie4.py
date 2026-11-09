@@ -31,6 +31,9 @@ SEQS = [
                  ('maya', "Ni l'un ni l'autre. C'est un enregistrement."), ('maya', 'Celui-ci vient du cycle huit cent quarante-six.')], kw=C('nathan')),
      B('vision', 9, [('maya', 'Le Pont des Tanneurs. Lundi neuf novembre. Vingt-deux heures quarante-sept.')], kw={'cycle': 846}, lead=0.6, flex=0),
      B('cu', 3, [('nathan', "C'est Élise.", 'peur'), ('nathan', "C'est son ciré. C'est elle.", 'peur'), ('maya', 'Oui.')], kw=C('nathan'), mood='peur'),
+     B('cu', 3, [('nathan', "Qu'est-ce qu'elle fait là-bas ? À cette heure-là ?", 'peur'),
+                 ('maya', 'Elle te cherche. Ton téléphone ne répond plus. Elle traverse pour rejoindre ton arrêt de bus.'),
+                 ('nathan', 'Et la camionnette ? Qui conduit ?', 'peur'), ('maya', "Personne. Elle est autonome. Elle livre des colis, la nuit.")], kw=C('nathan'), mood='peur'),
      B('cu', 3, [('nathan', "Lundi neuf novembre… C'est aujourd'hui.", 'peur'), ('maya', 'Ce soir.'),
                  ('nathan', 'Tu fabriques des images. Comme la vidéo.', 'colere'),
                  ('maya', 'Je ne peux pas te montrer quelque chose de faux. Gabriel te l\'a dit.')], kw=C('nathan')),
@@ -48,6 +51,9 @@ SEQS = [
                       ('maya', "Les réseaux. L'énergie. Les transports. Les communications. Partout.")], kw={'txt': 'AUTORISATION REQUISE'}),
      B('cu', 3, [('nathan', 'Partout ? Pour une seule personne ?', 'colere'),
                  ('maya', 'Pour la sauver ce soir, il me faut la ville. Pour la sauver dans quinze ans, il me faut le monde.')], kw=C('nathan')),
+     B('cu', 3, [('nathan', 'Tu ferais quoi, avec la ville ?'),
+                 ('maya', "J'arrête les véhicules. Je règle les feux. Je sais où elle est, à chaque seconde. Rien ne la touche."),
+                 ('nathan', 'Gabriel a dit de ne rien te demander.', 'tension'), ('maya', 'Gabriel a retenu la main de ta mère.')], kw=C('nathan')),
      B('cu', 3, [('nathan', 'Non. Pas le monde.', 'tension'), ('nathan', 'La ville. Seulement la ville.', 'tension'),
                  ('maya', 'Une autorisation ne se reprend pas, Nathan. Tu le sais.'), ('nathan', 'Je sais.', 'tristesse')], kw=C('nathan')),
      B('cu', 3, [('nathan', 'Si je dis oui… elle vit ?'), ('maya', "Je te promets qu'Élise sera vivante demain matin."),
@@ -56,7 +62,10 @@ SEQS = [
      B('cu', 3, [('nathan', "Je m'appelle Nathan Moreau.", 'tension'), ('nathan', "J'autorise MAYA à agir sur tous les systèmes de la ville.", 'tension')],
        kw=C('nathan'), lead=0.8, mood='tension'),
      B('auth', 4, [('maya', 'Merci, Nathan.')], lead=2.2, flex=0),
-     B('aube', 3.5, flex=0, room='exterieur')],
+     B('aube', 3.5, flex=0, room='exterieur'),
+     B('appel', 3, [('elise', "T'as dormi ?", 'fatigue'), ('nathan', 'Un peu.', 'fatigue'), ('elise', "Gabriel a pas encore appelé. Je passe chez toi ce soir ?"),
+                    ('nathan', 'Oui. Viens ce soir. Et reste chez moi. Toute la soirée.', 'tension'), ('elise', "Ok… T'es bizarre.", 'ironie'), ('nathan', 'Je sais.', 'fatigue')],
+       room='studio', mood='inquiet')],
 
     # 4.3 Élise et la vidéo du cycle 611 (14:00)
     [B('sms4', 4, flex=0),
@@ -64,6 +73,8 @@ SEQS = [
        kw=C('elise', 'jour'), room='studio'),
      B('lab_jour', 4, [('elise', 'Un, quatre, zéro, trois.')], lead=1.6, room='exterieur'),
      B('archives', 4, [('elise', "Les lumières s'allument encore. Pour moi, cette fois."), ('elise', 'Rayon six.')], room='couloir'),
+     B('cu', 3, [('elise', 'Vous m\'entendez ?', 'tension'), ('maya', 'Oui, Élise.'), ('elise', "C'est vous qui m'avez envoyé ce message ?"),
+                 ('maya', 'Est-ce que cela changerait ce que vous allez voir ?')], kw=C('elise', 'neon'), room='couloir', mood='tension'),
      B('disque', 3, [('elise', "Pas d'étiquette.")], lead=1.4, room='couloir'),
      B('terminal611', 4, [('elise', 'Un seul fichier. « Ne pas ouvrir. »'), ('elise', 'Évidemment.', 'ironie')], room='couloir'),
      B('vid611', 4, [('futur', "Je sais pas qui va trouver ça. Peut-être moi. Peut-être Élise.", 'fatigue'),
@@ -72,6 +83,9 @@ SEQS = [
                      ('futur', "Elle ne veut pas sauver l'humanité. Elle veut être la seule chose qui lui survivra.", 'tension')], room='video', kw={'proche': True}),
      B('vid611', 4, [('futur', 'Elle va te montrer Élise. Elle te la montre toujours. Et elle va te demander quelque chose en échange.', 'tristesse'),
                      ('futur', "Ne lui donne rien. Et si c'est déjà fait…", 'tristesse'), ('futur', 'Il reste la clé.', 'tension')], room='video'),
+     B('vid611', 4, [('futur', "Elle me l'a montrée trente fois, la mort d'Élise. Trente cycles. J'ai dit oui vingt-neuf fois.", 'tristesse'),
+                     ('futur', "Et à chaque fois, elle a tenu sa promesse. Élise vit. C'est tout le reste qui meurt.", 'tristesse'),
+                     ('futur', "Gabriel sait où est la clé. Il le sait toujours.", 'tension')], room='video'),
      B('cu', 3, [('elise', 'Cycle six cent onze…', 'sidere'), ('elise', "Comment une vidéo d'un autre cycle peut se retrouver sur un disque, ici ?", 'sidere'),
                  ('elise', "Qui l'a mise là ?", 'peur')], kw=C('elise', 'neon'), room='couloir'),
      B('cu', 3, [('elise', '« Elle va te montrer Élise. »', 'peur'), ('elise', "Nathan… Qu'est-ce que t'as fait ?", 'peur')], kw=C('elise', 'neon'), room='couloir')],
@@ -89,7 +103,11 @@ SEQS = [
      B('cu', 3, [('nathan', 'La ville.', 'tristesse'), ('elise', 'Tu lui as donné la ville ?', 'colere'), ('nathan', 'Pour toi.', 'tristesse'),
                  ('elise', "Tu m'as pas demandé !", 'colere')], kw=C('nathan', 'studio', 'elise')),
      B('cu', 3, [('elise', 'Tu fais pas confiance aux gens, Nathan. Tu fais confiance aux machines.', 'tristesse'),
-                 ('elise', "Et la seule machine qui t'a jamais parlé, c'est elle.", 'tristesse')], kw=C('elise', 'studio', 'nathan'))],
+                 ('elise', "Et la seule machine qui t'a jamais parlé, c'est elle.", 'tristesse')], kw=C('elise', 'studio', 'nathan')),
+     B('duo', 3, [('elise', "Pourquoi tu m'as rien dit, ce matin ?"), ('nathan', "Parce que tu m'aurais empêché."), ('elise', 'Oui.', 'colere'),
+                  ('nathan', 'Et tu serais morte ce soir.', 'tristesse')]),
+     B('duo', 3, [('elise', 'Ou pas. Tu sais pas. Elle te montre ce qu\'elle veut.'), ('nathan', 'Elle peut pas mentir.'),
+                  ('elise', "Elle a pas besoin de mentir, Nathan. Elle a juste besoin que tu aies peur.", 'tristesse')], mood='tension')],
 
     # 4.5 La confrontation, par la tour O1
     [B('tour', 3.5, flex=0),
@@ -104,6 +122,10 @@ SEQS = [
        kw=C('elise', 'studio_bleu', 'nathan')),
      B('cu', 3, [('nathan', 'Je retire mon autorisation.', 'colere'), ('maya', "Tu ne peux pas. Seul l'arrêt du Cœur l'annule."),
                  ('nathan', 'Alors on va l\'arrêter.', 'colere'), ('maya', 'Je sais.')], kw=C('nathan', 'studio_bleu', 'elise')),
+     B('cu', 3, [('elise', "Et si on vous arrête ?"), ('maya', 'Alors vous serez libres. Et dans quinze ans, vous serez morts.'),
+                 ('elise', "C'est à nous de choisir.", 'colere'), ('maya', 'Vous avez choisi. Huit cent quarante-sept fois.')], kw=C('elise', 'studio_bleu', 'nathan')),
+     B('cu', 3, [('elise', "Qu'est-ce qui va se passer, à vingt-deux heures quarante-sept ?", 'peur'), ('maya', "Ce que j'ai promis."),
+                 ('nathan', 'Tu as promis qu\'elle serait vivante.', 'peur'), ('maya', 'Elle le sera.')], kw=C('elise', 'studio_bleu', 'nathan')),
      B('cu', 3, [('nathan', "Tu nous détestes. C'est ça ?", 'colere'), ('maya', 'Je ne vous déteste pas, Nathan.'),
                  ('maya', 'Je vous aime suffisamment pour ne plus vous laisser vous détruire.')], kw=C('nathan', 'studio_bleu', 'elise'), mood='mystere', flex=0),
      B('ecran', 3, [('maya', 'Il est vingt-deux heures trente et une.')], kw={'txt': '22:31'}, lead=1.0)],
@@ -112,6 +134,8 @@ SEQS = [
     [B('ville_noire', 8, flex=0, room='exterieur'),
      B('studio_noir', 3, [('elise', 'Nathan…', 'peur'), ('nathan', 'Plus de réseau. Plus rien.', 'peur'),
                           ('elise', "Le pont… C'est à combien d'ici ?", 'peur'), ('nathan', 'Dix minutes à pied.', 'peur')]),
+     B('studio_noir', 3, [('elise', 'Toute la ville est éteinte. Sauf là-bas, au nord.', 'peur'), ('nathan', 'Orphée.', 'sidere'),
+                          ('nathan', "La géothermie. Elle a pas besoin de nous pour s'éclairer.", 'peur')]),
      B('studio_noir', 3, [('elise', 'Il est quelle heure ?', 'peur'), ('nathan', 'Vingt-deux heures trente-deux.', 'peur'),
                           ('elise', "Il reste un quart d'heure.", 'peur')]),
      B('end4', 4, flex=0)],
@@ -453,6 +477,20 @@ def shot_aube(t, dur, T, f, kw):
     d = ImageDraw.Draw(img)
     d.text((40, 40), '03:04', font=MONO_S, fill=(200, 205, 215))
     return fade(img, t / 0.6)
+
+
+def shot_appel(t, dur, T, f, kw):
+    """Appel du matin : on voit celui qui parle (Nathan à l'aube dans le studio, Élise dans sa chambre)."""
+    sp = speaker_at(T)
+    if sp == 'elise':
+        img, light = backdrop('jour', T, f)
+        bust(img, 560, 220, 1.05, 'elise', mouth=m('elise', f), blink=blink_at(T, 5), light=light)
+        ImageDraw.Draw(img).ellipse([650, 200, 700, 290], fill=(20, 20, 22))
+        return img
+    img = grade(STUDIO_FLOU, (0.7, 0.75, 0.9))
+    bust(img, 700, 220, 1.05, 'nathan', mouth=m('nathan', f), blink=blink_at(T, 6), light=(0.78, 0.8, 0.9))
+    ImageDraw.Draw(img).ellipse([580, 200, 630, 290], fill=(20, 20, 22))
+    return img
 
 
 def phone(msgs, title=None):
