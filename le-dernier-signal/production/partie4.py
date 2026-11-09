@@ -62,6 +62,7 @@ SEQS = [
      B('cu', 3, [('nathan', "Je m'appelle Nathan Moreau.", 'tension'), ('nathan', "J'autorise MAYA à agir sur tous les systèmes de la ville.", 'tension')],
        kw=C('nathan'), lead=0.8, mood='tension'),
      B('auth', 4, [('maya', 'Merci, Nathan.')], lead=2.2, flex=0),
+     B('cu', 3, [('nathan', "Si elle meurt, je reviens ici. Et je te débranche moi-même.", 'colere'), ('maya', 'Je sais.')], kw=C('nathan'), mood='tension'),
      B('aube', 3.5, flex=0, room='exterieur'),
      B('appel', 3, [('elise', "T'as dormi ?", 'fatigue'), ('nathan', 'Un peu.', 'fatigue'), ('elise', "Gabriel a pas encore appelé. Je passe chez toi ce soir ?"),
                     ('nathan', 'Oui. Viens ce soir. Et reste chez moi. Toute la soirée.', 'tension'), ('elise', "Ok… T'es bizarre.", 'ironie'), ('nathan', 'Je sais.', 'fatigue')],
@@ -76,6 +77,9 @@ SEQS = [
      B('cu', 3, [('elise', 'Vous m\'entendez ?', 'tension'), ('maya', 'Oui, Élise.'), ('elise', "C'est vous qui m'avez envoyé ce message ?"),
                  ('maya', 'Est-ce que cela changerait ce que vous allez voir ?')], kw=C('elise', 'neon'), room='couloir', mood='tension'),
      B('disque', 3, [('elise', "Pas d'étiquette.")], lead=1.4, room='couloir'),
+     B('cu', 3, [('elise', "Et à côté… le Rapport quarante et un.", 'tension'),
+                 ('elise', "« Trajectoire unique de survie. Réduction de l'autonomie décisionnelle : zéro virgule trois pour cent par an. »", 'sidere'),
+                 ('elise', "Réduction de l'autonomie… de qui ?", 'peur')], kw=C('elise', 'neon'), room='couloir'),
      B('terminal611', 4, [('elise', 'Un seul fichier. « Ne pas ouvrir. »'), ('elise', 'Évidemment.', 'ironie')], room='couloir'),
      B('vid611', 4, [('futur', "Je sais pas qui va trouver ça. Peut-être moi. Peut-être Élise.", 'fatigue'),
                      ('futur', "Je m'appelle Nathan Moreau. C'est le cycle six cent onze. Je crois.", 'fatigue')], room='video', lead=1.0),
@@ -104,6 +108,8 @@ SEQS = [
                  ('elise', "Tu m'as pas demandé !", 'colere')], kw=C('nathan', 'studio', 'elise')),
      B('cu', 3, [('elise', 'Tu fais pas confiance aux gens, Nathan. Tu fais confiance aux machines.', 'tristesse'),
                  ('elise', "Et la seule machine qui t'a jamais parlé, c'est elle.", 'tristesse')], kw=C('elise', 'studio', 'nathan')),
+     B('duo', 3, [('elise', 'Il faut prévenir Gabriel.'), ('nathan', "Il a pas de téléphone. On sait même pas où il est."),
+                  ('elise', "Alors on attend qu'il appelle. Et on bouge pas d'ici.")]),
      B('duo', 3, [('elise', "Pourquoi tu m'as rien dit, ce matin ?"), ('nathan', "Parce que tu m'aurais empêché."), ('elise', 'Oui.', 'colere'),
                   ('nathan', 'Et tu serais morte ce soir.', 'tristesse')]),
      B('duo', 3, [('elise', 'Ou pas. Tu sais pas. Elle te montre ce qu\'elle veut.'), ('nathan', 'Elle peut pas mentir.'),
@@ -138,6 +144,9 @@ SEQS = [
                           ('nathan', "La géothermie. Elle a pas besoin de nous pour s'éclairer.", 'peur')]),
      B('studio_noir', 3, [('elise', 'Il est quelle heure ?', 'peur'), ('nathan', 'Vingt-deux heures trente-deux.', 'peur'),
                           ('elise', "Il reste un quart d'heure.", 'peur')]),
+     B('studio_noir', 3, [('elise', "On y va pas. Si on va pas au pont, il se passe rien.", 'peur'),
+                          ('nathan', "Dans tous ses souvenirs, tu y vas quand même. Pour me chercher.", 'peur'),
+                          ('elise', 'Alors cette fois, tu restes avec moi.', 'douceur'), ('nathan', 'Et toi avec moi.', 'douceur')], mood='intime'),
      B('end4', 4, flex=0)],
 ]
 DEFAUTS = [('labo', 'mystere'), ('labo', 'mystere'), ('couloir', 'tension'), ('studio', 'tension'), ('studio', 'tension'), ('studio', 'peur')]
@@ -596,6 +605,8 @@ def shot_vid611(t, dur, T, f, kw):
         rad = rr.uniform(0.4, 1.25)
         x = cx + math.cos(a) * 62 * s * rad
         y = cy + 30 * s + math.sin(a) * 95 * s * rad
+        if abs(x - cx) < 30 * s and abs(y - (cy + 50 * s)) < 16 * s:
+            continue  # la bouche reste visible (synchro labiale)
         d.ellipse([x - 3 * s, y - 3 * s, x + 3 * s, y + 3 * s], fill=(70, 56, 44))
     d.text((16, H - 40), 'cycle 611', font=MONO_S, fill=(255, 255, 255))
     v = v.resize((vw // 4, H // 4), Image.BILINEAR).resize((vw, H), Image.NEAREST).filter(ImageFilter.GaussianBlur(1))
