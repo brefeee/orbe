@@ -55,8 +55,8 @@ SECTIONS = sorted(M.get('sections') or [[0, 'intro'], [min(8 * BAR, DUR * .25), 
 END = float(M.get('end', DUR - 1.2)); STOPS = M.get('stops', [])
 
 
-def t_(d): return np.arange(max(1, int(d * SR))) / SR
-def noise(d): return rng.standard_normal(max(1, int(d * SR)))
+def t_(d): return np.arange(max(1, int(round(d * SR)))) / SR
+def noise(d): return rng.standard_normal(max(1, int(round(d * SR))))
 def filt(x, lo=None, hi=None, order=2):
     X = np.fft.rfft(x); f = np.fft.rfftfreq(len(x), 1 / SR); g = np.ones_like(f)
     if hi: g *= 1 / np.sqrt(1 + (f / hi) ** (2 * order))
@@ -255,7 +255,7 @@ def sfx(name, dur):
     if name == 'whoosh': d = .5; t = t_(d); return filt(noise(d), 500, 5000) * np.sin(np.pi * t / d) ** 2 * .5
     if name == 'swish': d = .22; t = t_(d); return filt(noise(d), 2000, 9000) * np.sin(np.pi * t / d) ** 2 * .4
     if name == 'impact': t = t_(.7); f = 50 + 110 * np.exp(-t * 22); return np.tanh(np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 5) * 2.5) * .8 + np.pad(filt(noise(.25), 600, 6000) * np.exp(-t_(.25) * 22) * .45, (0, len(t) - int(.25 * SR)))
-    if name == 'boom': return boom() + np.pad(crash(.5), (0, 0))[:len(boom())] if len(crash()) >= len(boom()) else boom()
+    if name == 'boom': b = boom(); return b + crash(.5)[:len(b)]
     if name == 'pop': return sweep(380, 950, .09, 18) * .6
     if name == 'coin': x = np.zeros(int(.5 * SR)); place(x, sq(988, t_(.08)) * adsr(.08, .002, .02) * .22, 0); place(x, sq(1319, t_(.4)) * adsr(.4, .002, .1, 7) * .22, .075); return x
     if name == 'ding': return inst('bell', 1568, .9) * 1.6
@@ -287,7 +287,7 @@ def sfx(name, dur):
         return x
     if name == 'win':
         x = np.zeros(int(1.6 * SR))
-        for i, n_ in enumerate((72, 76, 79, 84)): place(x, inst('brass', hz(n_), .16) + inst('bell', hz(n_ + 12), .5), i * .11)
+        for i, n_ in enumerate((72, 76, 79, 84)): place(x, inst('brass', hz(n_), .16), i * .11); place(x, inst('bell', hz(n_ + 12), .5), i * .11)
         for n_ in (72, 76, 79, 84): place(x, inst('brass', hz(n_), .8) * .7, .46)
         return x
     if name == 'heartbeat': x = np.zeros(int(.6 * SR)); place(x, drum('k_soft') * 1.0, 0); place(x, drum('k_soft') * .7, .22); return filt(x, None, 180) * 1.6
