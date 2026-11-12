@@ -43,8 +43,8 @@ function makeBeam(color, len = 34, r = 3.2) {
 /** Dalle lumineuse : socle sombre, plaque émissive propre (intensité animée), liseré, halo. */
 function makeTile(color, size = 2.6) {
   const g = new THREE.Group();
-  g.add(rbox(size, .5, size, .16, '#15123a', { rough: .4, pos: [0, -.25, 0], rot: [Math.PI / 2, 0, 0] }));
-  const m = ownEmis(color); const plate = new THREE.Mesh(new THREE.BoxGeometry(size * .8, .08, size * .8), m); plate.position.y = .03; plate.receiveShadow = true; g.add(plate);
+  g.add(rbox(size, size, .5, .16, '#221a5e', { rough: .4, pos: [0, -.25, 0], rot: [Math.PI / 2, 0, 0] }));
+  const m = ownEmis(color); const plate = new THREE.Mesh(new THREE.BoxGeometry(size * .86, .08, size * .86), m); plate.position.y = .03; plate.receiveShadow = true; g.add(plate);
   const rim = new THREE.Mesh(new THREE.BoxGeometry(size * .96, .05, size * .96), emis(color, .9)); rim.position.y = -.02; g.add(rim);
   const h = glow(color, size * 2.4, .3); h.position.y = .35; g.add(h);
   g.userData = { m, h, size }; return g;
@@ -91,10 +91,10 @@ for (let i = 0; i < NT; i++) { const tl = makeTile(NEON[i % 5]); tl.position.set
 const eqCols = [];
 for (let i = 0; i < NT; i++) for (const s of [-1, 1]) {
   const col = NEON[(i + (s > 0 ? 2 : 0)) % 5]; const b = box(1.1, 1, 1.1, col, { emissive: col, emissiveI: .9, rough: .5, cast: false });
-  b.position.set(s * (6.2 + (i % 2) * 1.6), .5, i * DZ + 1.6); G_track.add(b); eqCols.push(b);
+  b.position.set(s * (8.6 + (i % 2) * 1.8), .5, i * DZ + 1.6); G_track.add(b); eqCols.push(b);
 }
 // arches néon au-dessus de la piste
-for (let i = 0; i < 12; i++) { const col = NEON[(i * 2 + 1) % 5]; const a = torus(8.6, .2, col, { emissive: col, emissiveI: 1.5, seg: 40, cast: false }); a.position.set(0, 0, i * DZ * 4 + 6.4); G_track.add(a); }
+for (let i = 0; i < 12; i++) { const col = NEON[(i * 2 + 1) % 5]; const a = torus(11, .22, col, { emissive: col, emissiveI: 1.5, seg: 40, cast: false }); a.position.set(0, 0, i * DZ * 4 + 6.4); G_track.add(a); }
 // ondes de choc à chaque réception
 const rings = []; for (let i = 0; i < 4; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(1, .07, 8, 40), basic('#ffffff', 1, true)); r.rotation.x = Math.PI / 2; G_track.add(r); rings.push(r); }
 const hero = makeDancer(C.pink, C.cyan, C.cyan); scene.add(hero);
@@ -137,7 +137,7 @@ const LANES = [
 ];
 for (const L of LANES) {
   L.tiles = []; for (let i = 0; i < L.n; i++) { const tl = makeTile(L.color, L.size); tl.position.x = L.x; G_diff.add(tl); L.tiles.push(tl); }
-  L.ch = makeDancer(L.color, '#f4f6ff', L.color); L.ch.position.x = L.x; G_diff.add(L.ch);
+  L.ch = makeDancer(L.color, '#2b1a55', '#ffffff'); L.ch.position.x = L.x; G_diff.add(L.ch);
   L.beam = makeBeam(L.color, 30, 2.6); L.beam.position.set(L.x, 27, -1); G_diff.add(L.beam);
   for (const s of [-1, 1]) { const rail = box(.12, .12, 90, L.color, { emissive: L.color, emissiveI: 1.1, cast: false }); rail.position.set(L.x + s * 1.85, .06, -22); G_diff.add(rail); }
 }
@@ -218,10 +218,10 @@ function render(t) {
   // ------------------------------------------------------------------ 3D : un plan par bloc
   if (t < T.songs) {                                                    // 1. accroche : le héros rebondit vers nous, pile sur les temps
     showOnly(GROUPS, G_track); backdrop(t, C.pink);
-    const r = runTrack(t, 0, 2, 1e9); animEq(eqCols, t, .8); rig.visible = true; rig.position.set(0, 0, r.zLin); swingBeams(beams, t, 4);
+    const r = runTrack(t, 0, 2, 1e9, 1.8); animEq(eqCols, t, .8); rig.visible = true; rig.position.set(0, 0, r.zLin); swingBeams(beams, t, 4);
     followSun(0, r.zLin);
     const k = prog(t, 0, T.songs, ease.io);
-    camLook(camera, [Math.sin(t * .9) * 2.2, 3.4 + k * 1.2, r.zLin + 21 - k * 2.5], [0, 4.7, r.zLin + 1], 42);
+    camLook(camera, [Math.sin(t * .9) * 2.2, 3.4 + k * 1.2, r.zLin + 25 - k * 2], [0, 4.3, r.zLin + 1], 42);
   } else if (t < T.diff) {                                              // 2. choix de la chanson : carrousel de 5 disques
     showOnly(GROUPS, G_stage); backdrop(t, C.violet); const lt = t - T.songs, b = lt / BEAT;
     G_discs.visible = true; podium.visible = false;
@@ -229,15 +229,15 @@ function render(t) {
     const chosen = b >= 8, kc = prog(b, 8, 8.8, ease.back);
     discs.forEach((d, i) => {
       const ang = (i - rot) * (2 * Math.PI / 5), front = Math.cos(ang) > .95, sel = front && chosen;
-      d.position.set(Math.sin(ang) * 4.5, 8.3 + Math.cos(ang) * .5 + (front ? pulse(t) * .25 : 0) + (sel ? kc * .5 : 0), Math.cos(ang) * 4.5);
-      d.scale.setScalar((.72 + .28 * (Math.cos(ang) * .5 + .5)) * (sel ? 1 + kc * .35 : 1));
+      d.position.set(Math.sin(ang) * 4.5, 8.3 + Math.cos(ang) * .5 + (front ? pulse(t) * .25 : 0) + (sel ? kc * .2 : 0), Math.cos(ang) * 4.5);
+      d.scale.setScalar((.72 + .28 * (Math.cos(ang) * .5 + .5)) * (sel ? 1 + kc * .2 : 1));
       d.userData.spin.rotation.z = -t * 3; d.userData.rim.emissiveIntensity = front ? 2.2 + pulse(t) * 2 : .8; d.userData.h.material.opacity = front ? .55 + pulse(t) * .3 : .15;
     });
     hero.visible = true; hero.position.set(0, .7, 0);
     if (chosen) { hop(hero, frac(b), 1.3, .7); poseCheer(hero, t); }
     else { poseIdle(hero, t); hero.position.y = .7 + pulse(t, 7) * .28; hero.parts.armR.rotation.set(0, 0, 2.5 + Math.sin(b * Math.PI) * .2); hero.parts.head.rotation.set(-.25, 0, 0); }
     animEq(stageEq, t, .9, 5); spk.forEach(s => pumpSpeaker(s, pulse(t, 7))); swingBeams(stageBeams, t, 6, .45); followSun(0, 0);
-    camLook(camera, [Math.sin(lt * .35) * 4, 5.2, 26.5 - prog(t, T.songs, T.diff, ease.io) * 2.5], [0, 5.6, 0], 42);
+    camLook(camera, [Math.sin(lt * .35) * 4, 4.6, 29 - prog(t, T.songs, T.diff, ease.io) * 1.5], [0, 4.1, 0], 42);
   } else if (t < T.play) {                                              // 3. trois difficultés : trois couloirs, trois cadences
     showOnly(GROUPS, G_diff); backdrop(t, C.cyan, .8); const lt = t - T.diff, act = Math.min(2, Math.floor(lt / BAR));
     LANES.forEach((L, li) => {
@@ -256,21 +256,21 @@ function render(t) {
     camLook(camera, [fx * .55, 10.5 - lt * .25, 27.5 - lt * .35], [fx * .3, 2.6, 0], 42);
   } else if (t < T.result) {                                            // 4. la partie : combo qui monte, lumières qui grandissent
     showOnly(GROUPS, G_track); const lt = t - T.play; backdrop(t, lt < 2 * BAR ? C.cyan : C.pink, 1 + lt * .08);
-    const r = runTrack(t, T.play, 12, 12); combo = r.k + 1;
+    const r = runTrack(t, T.play, 12, 12, 1.9); combo = r.k + 1;
     animEq(eqCols, t, .7 + combo * .035); rig.visible = true; rig.position.set(0, 0, r.zLin); swingBeams(beams, t, clamp(2 + Math.floor(combo / 2), 2, 8), .55); followSun(0, r.zLin);
-    const ang = -.75 + prog(lt, 0, 4 * BAR, ease.io) * 1.5, dist = 19 + (r.fast ? prog(r.b, 12, 13) * 3 : 0);
-    camLook(camera, [Math.sin(ang) * dist * .75, 5.2 + Math.sin(lt * .8) * .8, r.zLin + Math.cos(ang) * dist], [0, 4.4, r.zLin + .5], 42);
+    const ang = -.42 + prog(lt, 0, 4 * BAR, ease.io) * .84, dist = 23 + (r.fast ? prog(r.b, 12, 13) * 3 : 0);
+    camLook(camera, [Math.sin(ang) * dist, 4.6 + Math.sin(lt * .8) * .8, r.zLin + Math.cos(ang) * dist], [0, 3.6, r.zLin + .5], 42);
   } else if (t < T.end) {                                               // 5. résultat (note S) puis 6. classement par chanson
     showOnly(GROUPS, G_stage); const res = t < T.lead; backdrop(t, res ? C.yellow : C.cyan, res ? 1.2 : .9);
     G_discs.visible = false; podium.visible = true; podiumTop.material.emissiveIntensity = 1.2 + 2.5 * pulse(t);
-    const b = t / BEAT; hero.visible = true; hero.position.set(0, 0, 0); hop(hero, frac(b), res ? 1.1 : .8, 1.66); poseCheer(hero, t); hero.rotation.y = res ? Math.sin(t * 2) * .3 : 0;
+    const b = t / BEAT; hero.visible = true; hero.position.set(0, 0, 0); hop(hero, frac(b), res ? 1.0 : .5, 1.66); poseCheer(hero, t); hero.rotation.y = res ? Math.sin(t * 2) * .3 : 0;
     animEq(stageEq, t, 1.2, 2); spk.forEach(s => pumpSpeaker(s, pulse(t, 7))); swingBeams(stageBeams, t, 6, .6); followSun(0, 0);
-    if (res) { const lt = t - T.result, an = -.5 + lt * .26; camLook(camera, [Math.sin(an) * 25, 3.2, Math.cos(an) * 25], [0, 6.1, 0], 42); }
-    else { const lt = t - T.lead; camLook(camera, [Math.sin(lt * .3) * 3, 7, 35 - lt * .5], [0, 10.6, 0], 42); }
+    if (res) { const lt = t - T.result, an = -.5 + lt * .26; camLook(camera, [Math.sin(an) * 28, 3.4, Math.cos(an) * 28], [0, 5.3, 0], 42); }
+    else { const lt = t - T.lead; camLook(camera, [Math.sin(lt * .3) * 3, 6.5, 40 - lt * .4], [0, 7.3, 0], 42); }
   } else {                                                              // 7. écran final : la piste continue de battre en fond
     showOnly(GROUPS, G_track); backdrop(t, C.pink, 1.1); const lt = t - T.end;
     const r = runTrack(t, T.end, 26, 1e9, 1.9); animEq(eqCols, t, 1); rig.visible = true; rig.position.set(0, 0, r.zLin); swingBeams(beams, t, 8, .6); followSun(0, r.zLin);
-    camLook(camera, [Math.sin(lt * .5) * 3, 9.5, r.zLin + 27], [0, -5.6, r.zLin], 42);
+    camLook(camera, [Math.sin(lt * .5) * 3, 13, r.zLin + 44], [0, -7.6, r.zLin], 42);
   }
   draw3D(scene, camera, { dx: sx, dy: sy });
   vignette(.5, '4,0,20');
@@ -280,15 +280,15 @@ function render(t) {
   if (t < T.songs) {                                                    // accroche visible dès la première image
     const out = 1 - inv(T.songs - .2, T.songs, t), sc = 1 + .5 * (1 - ease.out(inv(0, .3, t))) + .035 * pulse(t, 6);
     text('TU AS LE\nRYTHME ?', SAFE.cx, 380, { font: TITLE, weight: 900, size: 124, grad: ['#ffffff', C.cyan], stroke: '#0a0430', strokeW: 20, shadow: 'rgba(255,61,240,.85)', shadowY: 9, scale: sc, alpha: out, lineH: 1.12 });
-    caption(t, 4 * BEAT, T.songs - .1, 'Rebondis pile sur le temps', { y: 1400, size: 62, bg: C.pink, color: '#ffffff', anim: 'pop' });
+    caption(t, 4 * BEAT, T.songs - .1, 'Rebondis pile sur le temps', { y: 1450, size: 62, bg: C.pink, color: '#ffffff', anim: 'pop' });
   }
   flash(t, T.songs, .3, '255,61,240', .9);
   if (t >= T.songs && t < T.diff) {
     const b = (t - T.songs) / BEAT, n = 1 + Math.min(4, Math.floor(b / 2)), chosen = b >= 8;
     if (!chosen) pill(`CHANSON ${n} / 5`, SAFE.cx, 290, { font: TITLE, weight: 800, size: 50, bg: 'rgba(9,5,34,.88)', color: NEON[(n - 1) % 5], border: NEON[(n - 1) % 5], borderW: 5, scale: 1 + .08 * Math.exp(-frac(b / 2) * 2 * 6) });
     else pill('CHANSON CHOISIE', SAFE.cx, 290, { font: TITLE, weight: 800, size: 50, bg: C.violet, color: '#ffffff', border: '#ffffff', borderW: 5, scale: ease.back(inv(8, 8.7, b)) });
-    caption(t, T.songs + .25, T.songs + 8 * BEAT - .1, '5 CHANSONS\nORIGINALES', { font: TITLE, weight: 900, size: 88, y: 1370, anim: 'slam', grad: ['#ffffff', C.yellow], stroke: '#0a0430', strokeW: 16, lineH: 1.14 });
-    caption(t, T.songs + 8 * BEAT, T.diff - .25, 'Choisis ta chanson', { y: 1390, size: 74, bg: C.violet, color: '#ffffff', anim: 'pop' });
+    caption(t, T.songs + .25, T.songs + 8 * BEAT - .1, '5 CHANSONS\nORIGINALES', { font: TITLE, weight: 900, size: 88, y: 1425, anim: 'slam', grad: ['#ffffff', C.yellow], stroke: '#0a0430', strokeW: 16, lineH: 1.14 });
+    caption(t, T.songs + 8 * BEAT, T.diff - .25, 'Choisis ta chanson', { y: 1430, size: 74, bg: C.violet, color: '#ffffff', anim: 'pop' });
   }
   wipe(t, T.diff, { color: C.cyan, color2: C.pink, dur: .5 });
   if (t >= T.diff + .25 && t < T.play) {
@@ -298,7 +298,6 @@ function render(t) {
     const s0 = act * BAR + (act ? 0 : .3);
     caption(t, T.diff + s0, T.diff + (act + 1) * BAR - (act === 2 ? .2 : .02), L.name, { font: TITLE, weight: 900, size: 118, y: 1370, anim: 'slam', inDur: .2, color: L.color, stroke: '#0a0430', strokeW: 20, shadow: 'rgba(0,0,0,.6)' });
   }
-  if (t > T.play - BAR && t < T.play) fade(.0 + .0 * t);
   flash(t, T.play, .4, '255,255,255', 1);
   if (t >= T.play && t < T.result) {
     const lt = t - T.play, b = lt / BEAT, u = steps(b, 12), since = (u - Math.floor(u)) * (b >= 12 ? BEAT / 2 : BEAT), kick = Math.exp(-since * 9);
@@ -310,21 +309,21 @@ function render(t) {
     hudBox(590, 232, 400, 150, cc); text('COMBO', 790, 272, { font: TITLE, weight: 700, size: 34, color: cc, spacing: 4 });
     text('x' + combo, 790, 334, { font: TITLE, weight: 900, size: 70, color: '#ffffff', scale: 1 + .35 * kick, glow: cc });
     beatDots(t, SAFE.cx, 440, cc);
-    caption(t, T.play + .2, T.play + 2 * BAR - .1, 'SAUTE SUR\nLE TEMPS', { font: TITLE, weight: 900, size: 96, y: 1380, anim: 'slam', grad: ['#ffffff', C.cyan], stroke: '#0a0430', strokeW: 18, lineH: 1.14 });
-    caption(t, T.play + 2 * BAR, T.result - .12, 'GARDE TON\nCOMBO', { font: TITLE, weight: 900, size: 96, y: 1380, anim: 'slam', grad: ['#ffffff', C.pink], stroke: '#0a0430', strokeW: 18, lineH: 1.14 });
+    caption(t, T.play + .2, T.play + 2 * BAR - .1, 'SAUTE SUR\nLE TEMPS', { font: TITLE, weight: 900, size: 92, y: 1425, anim: 'slam', grad: ['#ffffff', C.cyan], stroke: '#0a0430', strokeW: 18, lineH: 1.14 });
+    caption(t, T.play + 2 * BAR, T.result - .12, 'GARDE TON\nCOMBO', { font: TITLE, weight: 900, size: 92, y: 1425, anim: 'slam', grad: ['#ffffff', C.pink], stroke: '#0a0430', strokeW: 18, lineH: 1.14 });
   }
   flash(t, T.result, .45, '255,225,77', 1);
   if (t >= T.result && t < T.lead) {
     const lt = t - T.result; rays(t, { cy: 560, color: 'rgba(255,225,77,.07)', n: 14 }); confetti(t, T.result + .05, { colors: NEON.concat('#ffffff'), cy: 700, n: 130, life: 3.6 });
-    text('NOTE', SAFE.cx, 268, { font: TITLE, weight: 800, size: 58, color: '#ffffff', stroke: '#0a0430', strokeW: 12, spacing: 14, alpha: inv(.1, .35, lt) });
-    text('S', SAFE.cx, 500, { font: TITLE, weight: 900, size: 380, grad: ['#fff7b0', '#ff9d2e'], stroke: '#0a0430', strokeW: 30, shadow: 'rgba(255,61,240,.9)', shadowY: 14, glow: 'rgba(255,225,77,.9)', scale: lerp(3, 1, ease.out(inv(0, .28, lt))) * (1 + .04 * pulse(t, 6)), alpha: inv(0, .15, lt) });
-    caption(t, T.result + .5, T.lead - .2, 'VISE LA NOTE S', { font: TITLE, weight: 900, size: 92, y: 1400, anim: 'pop', color: '#ffffff', stroke: '#0a0430', strokeW: 18 });
+    text('NOTE', SAFE.cx, 262, { font: TITLE, weight: 800, size: 58, color: '#ffffff', stroke: '#0a0430', strokeW: 12, spacing: 14, alpha: inv(.1, .35, lt) });
+    text('S', SAFE.cx, 470, { font: TITLE, weight: 900, size: 300, grad: ['#fff7b0', '#ff9d2e'], stroke: '#0a0430', strokeW: 30, shadow: 'rgba(255,61,240,.9)', shadowY: 14, glow: 'rgba(255,225,77,.9)', scale: lerp(3, 1, ease.out(inv(0, .28, lt))) * (1 + .04 * pulse(t, 6)), alpha: inv(0, .15, lt) });
+    caption(t, T.result + .5, T.lead - .2, 'VISE LA NOTE S', { font: TITLE, weight: 900, size: 92, y: 1440, anim: 'pop', color: '#ffffff', stroke: '#0a0430', strokeW: 18 });
   }
   wipe(t, T.lead, { color: C.yellow, color2: C.violet, dir: 'up', dur: .5 });
   if (t >= T.lead + .2 && t < T.end) {
-    const lt = t - T.lead, b = lt / BEAT, ain = ease.back(inv(.2, .6, lt)), px = 150, pw = 780, py = 240, rowH = 104;
-    ctx.save(); ctx.translate(SAFE.cx, 590); ctx.scale(ain, ain); ctx.translate(-SAFE.cx, -590);
-    hudBox(px, py, pw, 720, C.cyan);
+    const lt = t - T.lead, b = lt / BEAT, ain = ease.back(inv(.2, .6, lt)), px = 150, pw = 780, py = 240, rowH = 90;
+    ctx.save(); ctx.translate(SAFE.cx, 570); ctx.scale(ain, ain); ctx.translate(-SAFE.cx, -570);
+    hudBox(px, py, pw, 660, C.cyan);
     text('CLASSEMENT', SAFE.cx, py + 62, { font: TITLE, weight: 900, size: 62, color: '#ffffff', spacing: 3 });
     pill('CHANSON  « SAUT NÉON »', SAFE.cx, py + 138, { size: 38, bg: C.pink, color: '#ffffff', weight: 900, shadow: false });
     let pos = 4; for (const bb of [1, 2, 3, 4]) pos -= prog(b, bb - .3, bb, ease.io);         // « TOI » grimpe d'une place par temps
@@ -332,7 +331,7 @@ function render(t) {
     for (let j = 0; j < 4; j++) {                                       // autres lignes : silhouettes neutres (aucun faux pseudo)
       const y = rowY(j + clamp(j - pos + 1));
       ctx.fillStyle = 'rgba(255,255,255,.07)'; roundRect(px + 30, y, pw - 60, rowH - 16, 18); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.3)'; roundRect(px + 150, y + 30, 250 - j * 30, 28, 14); ctx.fill(); roundRect(px + pw - 220, y + 30, 150, 28, 14); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.3)'; roundRect(px + 150, y + 24, 250 - j * 30, 26, 13); ctx.fill(); roundRect(px + pw - 220, y + 24, 150, 26, 13); ctx.fill();
     }
     const yT = rowY(pos), first = b >= 4, hl = first ? C.yellow : C.cyan, pp = first ? pulse(t, 5) : 0;
     ctx.save(); ctx.shadowColor = hl; ctx.shadowBlur = 24 + pp * 30; ctx.fillStyle = hl; roundRect(px + 18 - pp * 8, yT - 6, pw - 36 + pp * 16, rowH - 4, 20); ctx.fill(); ctx.restore();
@@ -340,7 +339,7 @@ function render(t) {
     if (first) text('1re PLACE', px + pw - 190, yT + rowH / 2 - 6, { font: 'Inter', weight: 900, size: 40, color: '#0a0430', alpha: inv(4, 4.4, b) });
     for (let s = 0; s < 5; s++) { const mine = Math.round(pos) === s; text(String(s + 1), px + 86, rowY(s) + rowH / 2 - 8, { font: TITLE, weight: 900, size: 50, color: mine ? '#0a0430' : 'rgba(255,255,255,.75)' }); }
     ctx.restore();
-    caption(t, T.lead + .45, T.end - .2, 'UN CLASSEMENT\nPAR CHANSON', { font: TITLE, weight: 900, size: 76, y: 1425, anim: 'rise', grad: ['#ffffff', C.cyan], stroke: '#0a0430', strokeW: 16, lineH: 1.14 });
+    caption(t, T.lead + .45, T.end - .2, 'UN CLASSEMENT\nPAR CHANSON', { font: TITLE, weight: 900, size: 76, y: 1440, anim: 'rise', grad: ['#ffffff', C.cyan], stroke: '#0a0430', strokeW: 16, lineH: 1.14 });
   }
   flash(t, T.end, .4, '255,255,255', 1);
   if (t >= T.end) {

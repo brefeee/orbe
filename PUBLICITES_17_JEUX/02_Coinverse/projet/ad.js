@@ -220,7 +220,7 @@ function render(t) {
     hookGlow.position.set(0, 8.7 + bob, -1.5); hookGlow.scale.setScalar(15 + Math.sin(t * 5) * 1.2);
     hero.scale.setScalar(.85); hero.position.set(0, Math.abs(Math.sin(t * 5.2)) * 1.0, 2.2); poseCheer(hero, t);
     setRain(t, { n: 46, w: 24, z0: -8, zd: 5, top: 24, bottom: -2, speed: 7 });
-    camLook(camera, [Math.sin(t * .6) * 2.2, 3.4, 28.5 - prog(t, 0, T.p1, ease.io) * 2.5], [0, 3.1, 0], 42);
+    camLook(camera, [Math.sin(t * .6) * 2.2, 3.9, 26.5 - prog(t, 0, T.p1, ease.io) * 2.5], [0, 3.5, 0], 42);
     addShake(.18, 16);
   } else if (t < T.p2) {                           // ---------- plan 1 : gagne de l'argent
     showOnly(GROUPS, gMoney); bg(['#27b6ff', '#8fe6ff', '#d6fbff']); const lt = t - T.p1;
@@ -231,7 +231,7 @@ function render(t) {
     const hop = lt > 4.3 ? Math.abs(Math.sin((lt - 4.3) * 7)) * 1.2 : 0; hero.position.set(0, hop, 0);
     if (lt > 4.3) poseCheer(hero, t); else { poseIdle(hero, t); hero.parts.head.rotation.set(-.25, Math.sin(lt * 2.2) * .7, 0); hero.parts.armL.rotation.set(0, 0, -.9 - Math.sin(t * 6) * .15); hero.parts.armR.rotation.set(0, 0, .9 + Math.sin(t * 6) * .15); }
     setRain(t, { n: 26, w: 26, z0: -12, zd: 5, top: 22, bottom: -1, speed: 8 });
-    const a = -.35 + lt * .13; camLook(camera, [Math.sin(a) * 22, 6.6 - lt * .15, Math.cos(a) * 22], [0, 2.9, 0], 42);
+    const a = -.35 + lt * .13; camLook(camera, [Math.sin(a) * 22, 6.6 - lt * .15, Math.cos(a) * 22], [0, 2.3, 0], 42);
     addShake(T.p1, 14);
   } else if (t < T.p3) {                           // ---------- plan 2 : gagne des parties
     showOnly(GROUPS, gWin); bg(['#2a1466', '#c2337a', '#ff9a3c']); const lt = t - T.p2;
@@ -239,7 +239,7 @@ function render(t) {
     const hop = Math.abs(Math.sin(lt * 5.5)) * .9; hero.position.set(0, 2.1 + hop, 0); poseCheer(hero, t);
     trophy.position.set(0, 2.1 + hop + 7.1 + Math.sin(t * 3) * .12, 0); trophy.rotation.y = lt * 1.6; trophy.scale.setScalar(1.15 * ease.back(inv(0, .4, lt)));
     trophyGlow.position.set(0, trophy.position.y + .7, -1); trophyGlow.scale.setScalar(7 + Math.sin(t * 7) * .8);
-    const a = .5 - lt * .2; camLook(camera, [Math.sin(a) * 23, 4.2 + lt * .25, Math.cos(a) * 23], [0, 5.6, 0], 42);
+    const a = .5 - lt * .2; camLook(camera, [Math.sin(a) * 27, 4.6, Math.cos(a) * 27], [0, 5.5, 0], 42);
     addShake(T.p2, 14);
   } else if (t < T.p4) {                           // ---------- plan 3 : débloque de nouvelles pièces
     showOnly(GROUPS, gVault); hero.visible = false; bg(['#0e0b30', '#1b1650']); const lt = t - T.p3;
@@ -270,8 +270,8 @@ function render(t) {
       const rest = air === 0; hero.position.set(hx, hy + (rest && lvl >= 0 ? Math.abs(Math.sin(t * 8)) * .25 : 0), .3); hero.rotation.y = rest ? .55 : 1.2;
       if (rest) { lvl >= 0 ? poseCheer(hero, t) : poseWalk(hero, t * 9, .5); } else poseJump(hero, air);
       setRain(t, { n: 30, w: 44, z0: -9, zd: 4, top: 26, bottom: 0, speed: 5 + lvl * 2 });
-      const cx = lerp(stepX(0) - 2.4, stepX(3) - .6, prog(lt, .3, LAND[3] - T.p4, ease.io)), cy = lerp(1.2, stepY(3) + .6, prog(lt, .3, LAND[3] - T.p4, ease.io));
-      camLook(camera, [cx + 5, cy + 2.2, 26.5], [cx, cy - 1.3, 0], 42);
+      let cx = stepX(0) - STEP_W, cy = 0; BOOST.forEach((_, i) => { const k = prog(t, LAND[i] - .6, LAND[i] + .2, ease.io); cx += STEP_W * k; cy += STEP_H * k; });
+      camLook(camera, [cx + 5, cy + 5.6, 28], [cx + .4, cy + 2.0, 0], 42);
       LAND.forEach(l => addShake(l, 12));
     } else {
       const u = t - T.p5; hero.position.set(stepX(3), stepY(3) + Math.abs(Math.sin(u * 6.5)) * 1.5, .3); hero.rotation.y = 0; poseCheer(hero, t);
@@ -294,30 +294,30 @@ function render(t) {
 
   // ---------- textes, compteurs et transitions
   if (t < T.p1) {
-    cap(t, .12, T.p1 - .12, 'JUSQU\'OÙ IRA\nTA FORTUNE ?', { anim: 'slam', size: 64, color: C.gold, y: 1410 });
+    cap(t, .12, T.p1 - .12, 'JUSQU\'OÙ IRA\nTA FORTUNE ?', { anim: 'slam', size: 64, color: C.gold, y: 1430 });
     pixelBurst(t, .18, 540, 440, '#fff3a8', { r: 520, n: 22, size: 26 });
   } else if (t < T.p2) {
     const lt = t - T.p1; hud('ARGENT', count(lt, .3, 4.6, 0, 1250), { color: C.gold });
-    cap(t, T.p1 + .25, T.p2 - .15, 'GAGNE\nDE L\'ARGENT', { anim: 'pop', size: 66 });
+    cap(t, T.p1 + .25, T.p2 - .15, 'GAGNE\nDE L\'ARGENT', { anim: 'pop', size: 66, y: 1440 });
   } else if (t < T.p3) {
     const lt = t - T.p2, n = Math.min(10, 1 + Math.floor(lt / (BAR * 3) * 10.2)), pulse = 1 + .12 * (1 - inv(0, .2, (lt / (BAR * 3) * 10.2) % 1));
     hud('VICTOIRES', String(n), { color: C.green, wd: 600, scale: pulse });
     confetti(t, T.p2 + .05, { cy: 700, n: 90, colors: [C.gold, C.pink, C.cyan, C.green, '#ffffff'] });
     pixelBurst(t, T.p2 + .1, 540, 520, '#ffffff', { r: 420 }); pixelBurst(t, T.p2 + BAR, 250, 560, C.cyan); pixelBurst(t, T.p2 + BAR * 1.5, 830, 520, C.pink); pixelBurst(t, T.p2 + BAR * 2, 300, 420, C.gold); pixelBurst(t, T.p2 + BAR * 2.5, 800, 640, C.green);
-    cap(t, T.p2 + .2, T.p2 + BAR * 1.5 - .1, 'GAGNE\nDES PARTIES', { anim: 'slam', size: 66 });
-    cap(t, T.p2 + BAR * 1.5, T.p3 - .15, 'CHAQUE VICTOIRE\nCOMPTE', { anim: 'pop', size: 56, color: C.gold });
+    cap(t, T.p2 + .2, T.p2 + BAR * 1.5 - .1, 'GAGNE\nDES PARTIES', { anim: 'slam', size: 66, y: 1440 });
+    cap(t, T.p2 + BAR * 1.5, T.p3 - .15, 'CHAQUE VICTOIRE\nCOMPTE', { anim: 'pop', size: 56, color: C.gold, y: 1440 });
   } else if (t < T.p4) {
     let n = 0; UNLOCK.forEach((u, i) => { if (t >= u) n = WINS[i]; });
     const last = Math.max(...UNLOCK.filter(u => t >= u), -9), pulse = 1 + .12 * (1 - inv(0, .25, t - last));
     hud('VICTOIRES', String(n), { color: C.green, wd: 600, scale: pulse, y: 300 });
-    cap(t, T.p3 + .25, T.p3 + BAR * 2.4, 'DE NOUVELLES\nPIÈCES', { anim: 'pop', size: 62, y: 1420 });
+    cap(t, T.p3 + 1.0, T.p3 + BAR * 2.4, 'DE NOUVELLES\nPIÈCES', { anim: 'pop', size: 62, y: 1420 });
     cap(t, T.p3 + BAR * 2.4 + .05, T.p4 - .15, '6 PIÈCES\nÀ DÉBLOQUER', { anim: 'slam', size: 62, y: 1420, color: C.gold });
   } else if (t < T.p5) {
     let lvl = -1; LAND.forEach((l, i) => { if (t >= l) lvl = i; });
     const last = lvl >= 0 ? LAND[lvl] : -9, pulse = 1 + .16 * (1 - inv(0, .25, t - last));
     hud('BOOST D\'ARGENT', lvl >= 0 ? '×' + BOOST[lvl] : '×1', { color: lvl >= 0 ? STEPCOL[lvl] : '#ffffff', wd: 720, scale: pulse, y: 300 });
-    cap(t, T.p4 + .2, T.p4 + BAR * 1.75, 'BOOSTE\nTON ARGENT', { anim: 'pop', size: 64, y: 1420 });
-    cap(t, T.p4 + BAR * 1.78, T.p5 - .15, 'CHAQUE PALIER\nDÉBLOQUE\nLE SUIVANT', { anim: 'slide', size: 52, y: 1410, color: C.gold });
+    cap(t, T.p4 + .2, T.p4 + BAR * 1.75, 'BOOSTE\nTON ARGENT', { anim: 'pop', size: 64, y: 1440 });
+    cap(t, T.p4 + BAR * 1.78, T.p5 - .15, 'CHAQUE PALIER\nDÉBLOQUE\nLE SUIVANT', { anim: 'slide', size: 52, y: 1425, lineH: 1.4, color: C.gold });
     LAND.forEach((l, i) => flash(t, l, .22, i === 3 ? '255,255,255' : '255,240,180', .35));
   } else if (t < T.end) {
     const u = t - T.p5; speedLines(t, { alpha: .35, color: 'rgba(255,255,255,.7)', inner: 620 });
