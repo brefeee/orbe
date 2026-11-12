@@ -513,7 +513,7 @@ function render(t) {
   flash(t, T.end, .4, '200,180,255', .9);
   if (t >= T.end) {
     fade(.42 * inv(T.end, T.end + .5, t), '#0c0a34'); sparkles(t, { n: 16, y: 240, h: 500, color: '#e4ff7a', size: 12 });
-    endCard(t, T.end + .15, { title: 'LIGHTS OUT\nMANSION', tagline: '5 objets. 2 fantômes. 1 lampe.', status: 'bientot', font: 'Creepster', titleSize: 170, titleGrad: ['#fff6b0', '#ffb347'], titleStroke: '#1a0f3d', accent: '#7c3aed' });
+    endCard(t, T.end + .15, { title: 'LIGHTS OUT\nMANSION', tagline: '5 objets. 2 fantômes. Ta lampe.', status: 'bientot', font: 'Creepster', titleSize: 170, titleGrad: ['#fff6b0', '#ffb347'], titleStroke: '#1a0f3d', accent: '#7c3aed' });
   }
 }
 
