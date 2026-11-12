@@ -89,7 +89,7 @@ const hero = makeCharacter({ shirt: '#19b6ff', pants: '#232a55', hair: '#3b2a1e'
 // ---- plan d'accroche : pièce géante de 2 €
 const gHook = new THREE.Group(); scene.add(gHook);
 gHook.add(floor(90, '#2a1a66', '#33207a', 22));
-const bigCoin = makeCoin({ r: 3.0, th: .55, rim: '#dfe4ee', core: C.gold, label: '2 €', ink: '#6b3f00', e: .2 }); gHook.add(bigCoin);
+const bigCoin = makeCoin({ r: 3.0, th: .55, rim: '#dfe4ee', core: C.gold, label: '★', ink: '#6b3f00', e: .2 }); gHook.add(bigCoin);
 const hookGlow = glow('#ffd35a', 15, .55); gHook.add(hookGlow);
 for (let i = 0; i < 10; i++) { const h = 1 + hash(i * 3) * 3.5, b = box(1.6, h, 1.6, i % 2 ? '#4a2aa0' : '#5b35c0', { pos: [(i < 5 ? -1 : 1) * (6 + hash(i) * 5), h / 2, -4 - hash(i * 7) * 12] }); gHook.add(b); }
 
@@ -166,7 +166,7 @@ const LAND = BOOST.map((_, i) => T.p4 + BAR * (i + .78));             // atterri
 
 // ---- écran final : la pièce de 2 € et les six pièces débloquées
 const gEnd = new THREE.Group(); scene.add(gEnd);
-const endCoin = makeCoin({ r: 1.55, th: .32, rim: '#dfe4ee', core: C.gold, label: '2 €', ink: '#6b3f00', e: .2 }); endCoin.position.set(0, 7.0, 0); gEnd.add(endCoin);
+const endCoin = makeCoin({ r: 1.55, th: .32, rim: '#dfe4ee', core: C.gold, label: '★', ink: '#6b3f00', e: .2 }); endCoin.position.set(0, 7.0, 0); gEnd.add(endCoin);
 const endGlow = glow('#ffd35a', 8, .5); endGlow.position.set(0, 7.0, -1); gEnd.add(endGlow);
 const endRow = SKIN.map((s, i) => { const c = makeCoin({ r: .62, th: .16, rim: s[0], core: s[1], label: '★', ink: s[2], e: .35 }); c.position.set((i - 2.5) * 1.72, -4.85, 0); gEnd.add(c); return c; });
 const GROUPS = [gHook, gMoney, gWin, gVault, gStairs, gEnd];

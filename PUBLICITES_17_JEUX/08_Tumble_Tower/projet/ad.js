@@ -193,7 +193,7 @@ function calendar(t) {
   text(DAYS[d], 0, 40, { font: TITLE, size: 74, color: '#10163a', maxW: 440 });
   ctx.restore();
 }
-const BOARD = [['Zélie_Saute', 30], ['MaxLeGrimpeur', 29], ['Nono_Bloc', 27], ['Lila42', 26]];
+const BOARD = [['Joueur A', 30], ['Joueur B', 29], ['Joueur C', 27], ['Joueur D', 26]];
 function leaderboard(t) {
   const lt = t - T.rank, kin = ease.back(inv(.15, .6, lt)), x0 = 120, w = 840, y0 = 300, rowH = 108;
   const me = lerp(25, 31, ease.io(inv(.8, 1.6, lt)));

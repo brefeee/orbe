@@ -280,7 +280,7 @@ function sBots(t) {
   ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,7,28,.82)'; roundRect(gx - 40, gy - 78, gw + 80, 190, 34); ctx.fill(); ctx.strokeStyle = rgba(C.gold, .8); ctx.lineWidth = 4; ctx.stroke();
   for (let i = 0; i < 8; i++) { const on = i < lvl, col = mixHex('#3df0a2', '#ff3b4e', i / 7), w = gw / 8 - 12, pop = on && i === lvl - 1 ? 1 + .25 * (1 - inv(0, .2, (t - (4.4 + i * .257)))) : 1; ctx.fillStyle = on ? col : 'rgba(255,255,255,.14)'; const hgt = 44 * pop; roundRect(gx + i * gw / 8 + 6, gy + 38 - hgt / 2 + 22, w, hgt, 12); ctx.fill(); }
   ctx.restore();
-  text(lvl === 1 ? 'BOT : FACILE' : lvl === 8 ? 'BOT : CAUCHEMAR' : `BOT : NIVEAU ${lvl} / 8`, SAFE.cx, gy - 22, { size: 54, weight: 900, color: lvl === 8 ? '#ff6b7a' : '#ffffff', alpha: a, glow: lvl === 8 ? '#ff0030' : undefined });
+  text(`BOT ${lvl} SUR 8`, SAFE.cx, gy - 22, { size: 54, weight: 900, color: lvl === 8 ? '#ff6b7a' : '#ffffff', alpha: a, glow: lvl === 8 ? '#ff0030' : undefined });
   caption(t, 4.25, 6.05, 'AFFRONTE 8 BOTS', { bg: C.gold, color: '#1a1033', size: 88, anim: 'pop' });
   caption(t, 6.2, 7.85, 'JUSQU\'AU CAUCHEMAR', { bg: C.red, size: 84, anim: 'slam' });
   flash(t, 6.2, .3, '255,40,70', .7);
