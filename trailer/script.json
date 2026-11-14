@@ -1,21 +1,136 @@
 {
   "_note": "Narration de la bande-annonce. Uniquement des faits réels sur ORBE ; l'acte IV est présenté comme une ambition (« Demain »). 'say' = texte prononcé (orthographe adaptée à la voix), 'show' = sous-titre.",
   "lines": [
-    { "id": "L01", "at": 2.0,   "act": "I",   "say": ["Chaque jour, nous cherchons.", "Nous enregistrons.", "Nous oublions."] },
-    { "id": "L02", "at": 8.2,   "act": "I",   "say": ["Nos connaissances sont éparpillées, dans des fichiers, des onglets, des applications qui ne se parlent pas."] },
-    { "id": "L03", "at": 18.0,  "act": "II",  "say": ["Et si tout partait d'un seul point ?"] },
-    { "id": "L04", "at": 28.6,  "act": "II",  "say": ["Orbe.", "Une carte vivante de tout ce que tu sais, où chaque connaissance trouve sa place, et chaque lien a un sens."] },
-    { "id": "L05", "at": 37.2,  "act": "III", "say": ["D'un côté, le savoir du monde : l'univers, la Terre, le vivant, les sociétés, les techniques."] },
-    { "id": "L06", "at": 44.2,  "act": "III", "say": ["Plus d'un milliard huit cents millions d'étoiles du catalogue Gaïa, explorables en direct.", "Et pour chaque point, ses sources."] },
-    { "id": "L07", "at": 53.0,  "act": "III", "say": ["Les informations se rangent, se relient, et gardent leur fiabilité, leur origine et leur histoire."] },
-    { "id": "L08", "at": 60.4,  "act": "III", "say": ["Connecte tes intelligences artificielles, et fais-les travailler ensemble."] },
-    { "id": "L09", "at": 65.0,  "act": "III", "say": ["L'une transforme ta question en une demande claire et structurée.", "Une autre accomplit le travail.", "Une troisième crée les images."] },
-    { "id": "L10", "at": 74.2,  "act": "III", "say": ["Elles lisent ta carte, la complètent, et tu vois exactement ce qu'elles ont ajouté."] },
-    { "id": "L11", "at": 80.6,  "act": "III", "say": ["Et ce qui est privé reste privé.", "Chiffré, sur ton ordinateur.", "Rien ne devient public sans ta décision."] },
-    { "id": "L12", "at": 89.0,  "act": "IV",  "say": ["Demain, Orbe ira plus loin : relier tes services et tes applications, agir sur ton ordinateur avec ton accord, te répondre de vive voix."] },
-    { "id": "L13", "at": 98.4,  "act": "IV",  "say": ["Réunir les connaissances, les intelligences et les outils, en un seul écosystème."] },
-    { "id": "L14", "at": 108.2, "act": "V",   "say": ["Orbe.", "Tout ce que tu sais, en un seul point."] },
-    { "id": "L15", "at": 114.0, "act": "V",   "say": ["Bientôt disponible.", "Découvre Orbe."] }
+    {
+      "id": "L01",
+      "at": 2.0,
+      "act": "I",
+      "say": [
+        "Chaque jour, nous cherchons.",
+        "Nous enregistrons.",
+        "Nous oublions."
+      ]
+    },
+    {
+      "id": "L02",
+      "at": 8.2,
+      "act": "I",
+      "say": [
+        "Nos connaissances sont éparpillées, dans des fichiers, des onglets, des applications qui ne se parlent pas."
+      ]
+    },
+    {
+      "id": "L03",
+      "at": 18.0,
+      "act": "II",
+      "say": [
+        "Et si tout partait d'un seul point ?"
+      ]
+    },
+    {
+      "id": "L04",
+      "at": 28.6,
+      "act": "II",
+      "say": [
+        "Orbe.",
+        "Une carte vivante de tout ce que tu sais, où chaque connaissance trouve sa place, et chaque lien a un sens."
+      ]
+    },
+    {
+      "id": "L05",
+      "at": 37.2,
+      "act": "III",
+      "say": [
+        "D'un côté, le savoir du monde : l'univers, la Terre, le vivant, les sociétés, les techniques."
+      ]
+    },
+    {
+      "id": "L06",
+      "at": 44.2,
+      "act": "III",
+      "say": [
+        "Plus d'un milliard huit cents millions d'étoiles du catalogue Gaïa, explorables en direct.",
+        "Et pour chaque point, ses sources."
+      ]
+    },
+    {
+      "id": "L07",
+      "at": 53.0,
+      "act": "III",
+      "say": [
+        "Les informations se rangent, se relient, et gardent leur fiabilité, leur origine et leur histoire."
+      ]
+    },
+    {
+      "id": "L08",
+      "at": 60.4,
+      "act": "III",
+      "say": [
+        "Connecte tes intelligences artificielles, et fais-les travailler ensemble."
+      ]
+    },
+    {
+      "id": "L09",
+      "at": 65.0,
+      "act": "III",
+      "say": [
+        "L'une transforme ta question en une demande claire et structurée.",
+        "Une autre accomplit le travail.",
+        "Une troisième crée les images."
+      ]
+    },
+    {
+      "id": "L10",
+      "at": 74.2,
+      "act": "III",
+      "say": [
+        "Elles lisent ta carte, la complètent, et tu vois exactement ce qu'elles ont ajouté."
+      ]
+    },
+    {
+      "id": "L11",
+      "at": 80.6,
+      "act": "III",
+      "say": [
+        "Et ce qui est privé reste privé.",
+        "Chiffré, sur ton ordinateur.",
+        "Rien ne devient public sans ta décision."
+      ]
+    },
+    {
+      "id": "L12",
+      "at": 89.0,
+      "act": "IV",
+      "say": [
+        "Demain, Orbe ira plus loin : relier tes services et tes applications, agir sur ton ordinateur avec ton accord, te répondre de vive voix."
+      ]
+    },
+    {
+      "id": "L13",
+      "at": 98.4,
+      "act": "IV",
+      "say": [
+        "Réunir les connaissances, les intelligences et les outils, en un seul écosystème."
+      ]
+    },
+    {
+      "id": "L14",
+      "at": 108.2,
+      "act": "V",
+      "say": [
+        "Orbe.",
+        "Tout ce que tu sais, en un seul point."
+      ]
+    },
+    {
+      "id": "L15",
+      "at": 113.6,
+      "act": "V",
+      "say": [
+        "Disponible le premier décembre deux mille vingt-six.",
+        "Découvre Orbe."
+      ]
+    }
   ],
   "duration": 120.0
 }

@@ -10,7 +10,7 @@ Bande-annonce de deux minutes, entièrement générée dans ce dossier : images 
 | 0:15 | II — L'apparition | Noir et silence, un point d'or s'allume, se divise (Public, Privé), puis une galaxie de connaissances se forme et se relie | « Et si tout partait d'un seul point ? » |
 | 0:36 | III — Les capacités | Les familles du savoir ; le ciel de Gaia ; les sources ; l'information qui se range par niveau de fiabilité ; trois IA qui se répartissent le travail ; la coque qui protège le Privé | Faits réels d'ORBE |
 | 1:28 | IV — La vision | Services, ordinateur et voix rejoignent le système, annoncés comme une ambition en développement | « Demain, Orbe ira plus loin… » |
-| 1:44 | V — La révélation | Impact, puis l’emblème d’ORBE (sphère de points lumineux, deux orbites, lettres fines), phrase finale, « Bientôt disponible » | « Tout ce que tu sais, en un seul point. » |
+| 1:44 | V — La révélation | Impact, puis l’emblème d’ORBE (sphère de points lumineux, deux orbites, lettres fines), phrase finale, sortie le 1er décembre 2026 | « Tout ce que tu sais, en un seul point. » |
 
 ## Ce qui est affirmé, et pourquoi
 
@@ -25,7 +25,7 @@ Chaque phrase s'appuie sur la version actuelle d'ORBE (dossier `app/`) :
 - **L'IA lit et complète la carte, et ses ajouts sont visibles** : serveur MCP `app/mcp_server.py`, filtre par auteur dans l'interface.
 - **Privé chiffré sur l'ordinateur ; rien de public sans décision** : `app/orbe_db.py` (SQLCipher, clé protégée par Windows).
 
-L'acte IV (services externes, contrôle de l'ordinateur, voix) n'existe pas encore dans ORBE. Il est présenté comme une ambition (« Demain », « Une ambition · en développement »), jamais comme une fonction disponible. « Bientôt disponible » correspond à l'état réel du projet : la version publique n'est pas encore en ligne.
+L'acte IV (services externes, contrôle de l'ordinateur, voix) n'existe pas encore dans ORBE. Il est présenté comme une ambition (« Demain », « Une ambition · en développement »), jamais comme une fonction disponible. La date de sortie, le 1er décembre 2026, a été communiquée par le créateur d'ORBE.
 
 ## Fabrication
 

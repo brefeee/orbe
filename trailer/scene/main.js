@@ -667,8 +667,9 @@ let ENV = null; // enveloppe de la voix (une valeur par image) pour animer l'ann
   } };
   text('logo-word', 'ORBE', 106.4, 120, { y: 540, fi: 1.8, fo: 1.2, drift: 0, track: .8 });
   text('tagline', 'Tout ce que tu sais, en un seul point.', 108.4, 113.2, { y: 905, fi: .9, fo: .7, drift: 10 });
-  text('eyebrow', 'Bientôt disponible', 113.8, 120, { y: 892, fi: .9, fo: 1.2, drift: 8 });
-  text('cta', 'Découvre ORBE', 114.9, 120, { y: 948, fi: .9, fo: 1.2, drift: 8 });
+  text('eyebrow', 'Disponible le', 113.7, 120, { y: 868, fi: .9, fo: 1.2, drift: 8 });
+  text('release', '1<sup>er</sup> décembre 2026', 114.0, 120, { y: 922, fi: .9, fo: 1.2, drift: 8 });
+  text('cta', 'Découvre ORBE', 117.0, 120, { y: 990, fi: .8, fo: 1.0, drift: 6 });
 }
 
 // ---------- montage : quelle scène à quel instant, transitions ----------
