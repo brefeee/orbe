@@ -67,3 +67,27 @@ cd client && npm install && npm run build     # interface
 cd server && ORBE_WEB_DIR=../client/dist npm start   # http://127.0.0.1:4780
 cd e2e && node shell.e2e.mjs                  # parcours réel dans un navigateur
 ```
+
+## 5. Contrats entre modules
+
+### Outils mis à disposition d'ORBE IA (`ctx.registry.aiTools`)
+Chaque module enregistre ses outils ; le module `ia` les propose aux modèles et les exécute **au nom de l'utilisateur**, après confirmation pour les niveaux `write` et `admin`. L'outil revérifie lui-même les permissions.
+- `carte` : `carte.search`, `carte.get_node`, `carte.add_knowledge`
+- `reseau` : `reseau.list_my_servers`, `reseau.get_server_structure`, `reseau.apply_server_plan` (création en masse de catégories, salons, rôles — réservé au propriétaire et aux administrateurs)
+
+### Commandes locales de l'application installée (Tauri, `desktop/`)
+Appelées par `invoke()` depuis le client, uniquement quand `isTauri()` est vrai. Tout chemin doit se trouver dans un dossier que l'utilisateur a accordé, sinon la commande échoue avec `not_granted`.
+
+| Commande | Arguments | Résultat |
+|---|---|---|
+| `local_grant_folder` | — | ouvre le sélecteur de dossier natif ; renvoie le chemin accordé ou `null` |
+| `local_grants` | — | `string[]` des dossiers accordés (persistés) |
+| `local_revoke_folder` | `{ path }` | — |
+| `local_walk` | `{ root }` | `{ entries: { path, name, size, modifiedMs }[], truncated, skipped }` — ignore dossiers système/cachés et noms sensibles (mots de passe, clés) ; 200 000 entrées au plus |
+| `local_read_file` | `{ path, maxBytes }` | octets bruts (`ArrayBuffer`) ; erreur `too_large` au-delà |
+| `local_list_dir` | `{ path }` | `{ name, path, isDir, size, modifiedMs }[]` |
+| `local_write_text` | `{ path, content }` | `{ bytes }` |
+| `local_open` | `{ target }` | ouvre un fichier, un dossier ou une adresse avec l'application par défaut |
+| `local_run` | `{ program, args, cwd? }` | `{ code, stdout, stderr }` — 60 s au plus, sorties tronquées à 200 Ko |
+
+La demande de confirmation à l'utilisateur est faite par le client (espace IA) avant `local_write_text`, `local_open` et `local_run`.

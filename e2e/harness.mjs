@@ -11,15 +11,15 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 export const SHOTS = join(ROOT, 'e2e', 'shots');
 
-export async function launch({ env = {} } = {}) {
-  if (!existsSync(join(ROOT, 'client', 'dist', 'index.html'))) throw new Error('Compile d’abord le client : (cd client && npm run build)');
+export async function launch({ env = {}, webDir = process.env.ORBE_E2E_DIST ?? join(ROOT, 'client', 'dist') } = {}) {
+  if (!existsSync(join(webDir, 'index.html'))) throw new Error('Compile d’abord le client : (cd client && npm run build)');
   mkdirSync(SHOTS, { recursive: true });
   const dataDir = mkdtempSync(join(tmpdir(), 'orbe-e2e-'));
   const port = 4900 + Math.floor(Math.random() * 500);
   const base = `http://127.0.0.1:${port}`;
   const server = spawn(process.execPath, ['--disable-warning=ExperimentalWarning', 'src/main.ts'], {
     cwd: join(ROOT, 'server'),
-    env: { ...process.env, PORT: String(port), ORBE_DATA_DIR: dataDir, ORBE_WEB_DIR: join(ROOT, 'client', 'dist'), ORBE_PUBLIC_URL: base, ...env },
+    env: { ...process.env, PORT: String(port), ORBE_DATA_DIR: dataDir, ORBE_WEB_DIR: webDir, ORBE_PUBLIC_URL: base, ...env },
     stdio: ['ignore', 'inherit', 'inherit'],
   });
   for (let i = 0; ; i++) {
