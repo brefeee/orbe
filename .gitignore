@@ -12,3 +12,14 @@ cache/
 .build/
 .work/
 imports/
+node_modules/
+dist/
+e2e/shots/
+server/data/
+*.log
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+client/dist-*/
+trailer/build/
+trailer/scene/node_modules/
+trailer/*.mp4

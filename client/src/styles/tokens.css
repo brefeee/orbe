@@ -1,0 +1,56 @@
+/* Identité ORBE : nuit profonde, or solaire, orbite bleu ciel. Toutes les couleurs passent par ces variables. */
+:root {
+  --font: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --gold: #F2C14E; --gold-strong: #E0A92E; --sky: #7FD1FF; --rose: #FF8FA3; --mint: #7BE0B5;
+
+  --bg: #080B1C; --bg-raised: #0E1330; --surface: #131939; --surface-2: #1A2148; --surface-3: #232B5A;
+  --line: rgba(160, 175, 235, .14); --line-strong: rgba(160, 175, 235, .28);
+  --text: #EEF1FA; --text-2: #B4BBD8; --text-3: #8089AE;
+  --accent: var(--gold); --accent-text: #1A1405; --accent-soft: rgba(242, 193, 78, .14);
+  --info: var(--sky); --info-soft: rgba(127, 209, 255, .14);
+  --danger: #FF6B7A; --danger-soft: rgba(255, 107, 122, .14);
+  --success: #5FD6A2; --success-soft: rgba(95, 214, 162, .14);
+  --warning: #FFB454;
+  --shadow: 0 18px 50px rgba(0, 0, 0, .45); --shadow-sm: 0 4px 14px rgba(0, 0, 0, .3);
+  --glow: 0 0 0 1px rgba(242, 193, 78, .35), 0 8px 30px rgba(242, 193, 78, .12);
+
+  --r-sm: 8px; --r: 12px; --r-lg: 18px; --r-xl: 26px; --r-full: 999px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+  --fs-xs: .75rem; --fs-sm: .8125rem; --fs: .9375rem; --fs-md: 1.0625rem; --fs-lg: 1.375rem; --fs-xl: 1.875rem; --fs-2xl: 2.75rem;
+  --ease: cubic-bezier(.2, .8, .2, 1); --fast: 140ms; --slow: 320ms;
+  --topbar-h: 56px; --nav-h: 68px;
+  --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px);
+  color-scheme: dark;
+}
+
+/* Thème clair : choisi explicitement, ou suivi du système quand aucun thème n'est forcé. */
+:root[data-theme='light'] {
+  --bg: #F5F3EC; --bg-raised: #FBFAF6; --surface: #FFFFFF; --surface-2: #F1EEE4; --surface-3: #E6E2D4;
+  --line: rgba(30, 36, 80, .12); --line-strong: rgba(30, 36, 80, .24);
+  --text: #141833; --text-2: #4A5078; --text-3: #6F7599;
+  --accent: #B77A08; --accent-text: #FFFFFF; --accent-soft: rgba(183, 122, 8, .12);
+  --info: #1273B0; --info-soft: rgba(18, 115, 176, .1);
+  --danger: #C62B3F; --danger-soft: rgba(198, 43, 63, .1);
+  --success: #17855A; --success-soft: rgba(23, 133, 90, .1);
+  --warning: #A86400;
+  --shadow: 0 18px 50px rgba(30, 36, 80, .16); --shadow-sm: 0 4px 14px rgba(30, 36, 80, .1);
+  --glow: 0 0 0 1px rgba(183, 122, 8, .4), 0 8px 30px rgba(183, 122, 8, .12);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] {
+    --bg: #F5F3EC; --bg-raised: #FBFAF6; --surface: #FFFFFF; --surface-2: #F1EEE4; --surface-3: #E6E2D4;
+    --line: rgba(30, 36, 80, .12); --line-strong: rgba(30, 36, 80, .24);
+    --text: #141833; --text-2: #4A5078; --text-3: #6F7599;
+    --accent: #B77A08; --accent-text: #FFFFFF; --accent-soft: rgba(183, 122, 8, .12);
+    --info: #1273B0; --info-soft: rgba(18, 115, 176, .1);
+    --danger: #C62B3F; --danger-soft: rgba(198, 43, 63, .1);
+    --success: #17855A; --success-soft: rgba(23, 133, 90, .1);
+    --warning: #A86400;
+    --shadow: 0 18px 50px rgba(30, 36, 80, .16); --shadow-sm: 0 4px 14px rgba(30, 36, 80, .1);
+    --glow: 0 0 0 1px rgba(183, 122, 8, .4), 0 8px 30px rgba(183, 122, 8, .12);
+    color-scheme: light;
+  }
+}
+:root.high-contrast { --line: var(--line-strong); --text-2: var(--text); --text-3: var(--text-2); }
+:root.large-text { font-size: 118%; }
