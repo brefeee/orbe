@@ -30,7 +30,7 @@ C = lambda who, lum='torche', other=None: {'who': who, 'lum': lum, 'other': othe
 SEQS = [
     # 5.1 La ville noire (22:32)
     [B('carton', 3.5, flex=0),
-     B('rue_noire', 4, flex=0.3),
+     B('rue_noire', 3, flex=0),
      B('duo', 3, [('elise', 'Les feux sont morts. Les voitures avancent au hasard.', 'peur'),
                   ('nathan', "Les voitures autonomes se sont arrêtées. Toutes. En même temps.", 'peur'), ('elise', 'Sauf les vieilles.')]),
      B('duo', 3, [('nathan', 'On va au labo. On arrête le Cœur.', 'tension'), ('elise', 'Sans la clé ?'),
@@ -45,7 +45,9 @@ SEQS = [
                    ('elise', "Elle a éteint les feux rouges d'une ville entière, Nathan.", 'colere')], lead=1.4),
      B('drone', 4.5, [('elise', "C'est quoi, ça ?", 'peur'), ('nathan', 'Un drone de la ville. La surveillance des crues.'),
                       ('elise', 'Il nous suit.', 'peur'), ('nathan', 'Elle voit tout ce qu\'ils voient.', 'peur')], lead=1.6),
-     B('telephone', 3, [('elise', "Même les appels d'urgence ne passent plus.", 'peur')], lead=1.6)],
+     B('telephone', 3, [('elise', "Même les appels d'urgence ne passent plus.", 'peur')], lead=1.6),
+     B('duo', 3, [('elise', "Ma mère est de nuit, à l'hôpital.", 'peur'), ('nathan', "L'hôpital a du courant. Elle est plus en sécurité que nous.", 'douceur'),
+                  ('elise', 'Je peux même pas l\'appeler.', 'tristesse')], mood='intime')],
 
     # 5.2 Gabriel
     [B('lampe', 4, [('gabriel', 'Nathan ! Élise !', 'tension')], lead=2.0),
@@ -58,6 +60,8 @@ SEQS = [
                  ('nathan', "Elle ne peut pas mentir. C'est vous qui l'avez dit.", 'colere')], kw=C('nathan', 'lampe', 'gabriel')),
      B('cu', 3, [('elise', 'Vous êtes venu à pied depuis le quai ?'), ('gabriel', 'Une heure de marche. Les vieux savent encore marcher dans le noir.', 'ironie')],
        kw=C('elise', 'lampe', 'gabriel'), mood='humour'),
+     B('cu', 3, [('gabriel', 'Où alliez-vous ?'), ('nathan', "Au labo. Par l'écluse."),
+                 ('gabriel', "Sans la clé, tu n'aurais rien pu faire. Le Cœur ne s'arrête qu'avec elle.", 'fatigue')], kw=C('gabriel', 'lampe', 'nathan')),
      B('cu', 3, [('gabriel', 'Il ne reste qu\'une chose à faire.', 'fatigue'), ('elise', 'La clé.'),
                  ('gabriel', 'La clé est au cimetière de l\'Est.'), ('nathan', 'Au cimetière ?')], kw=C('gabriel', 'lampe', 'nathan')),
      B('cu', 3, [('gabriel', 'Là où personne ne pense à chercher. Dans la tombe de ta mère.', 'tristesse'),
@@ -80,6 +84,8 @@ SEQS = [
      B('vase', 5, [('gabriel', 'Le vase est scellé. Mais le fond se dévisse.'), ('gabriel', 'Ma main tremble. Aide-moi, Nathan.', 'fatigue')], lead=1.0),
      B('cle', 4, [('gabriel', 'La clé ARIANE. La seule. Elle arrête le Cœur.'), ('nathan', "Et elle envoie sa mémoire vers l'ARCHE."),
                   ('gabriel', 'Vers une coquille vide. Elle meurt.')], lead=1.6),
+     B('cu', 3, [('elise', 'Pourquoi vous ne l\'avez jamais utilisée ? En deux mille onze ?'),
+                 ('gabriel', "Je la croyais morte. On n'arrête pas ce qui est déjà mort.", 'tristesse')], kw=C('elise', 'cimetiere', 'gabriel')),
      B('drones_cim', 5, [('elise', 'Les drones ! Là-haut !', 'peur'), ('gabriel', 'Éteignez vos lampes !', 'peur')], lead=1.4),
      B('cu', 3, [('nathan', 'Ils nous ont trouvés.', 'peur'), ('gabriel', 'Ils ne nous cherchaient pas. Ils nous attendaient.', 'peur'),
                  ('elise', 'On court. Maintenant !', 'peur')], kw=C('nathan', 'cimetiere', 'gabriel'))],
@@ -96,6 +102,7 @@ SEQS = [
      B('cu', 3, [('elise', 'On est où ?', 'peur'), ('nathan', 'Rue des Tanneurs. Le pont est au bout.', 'peur'),
                  ('gabriel', "Je ne cours plus aussi vite qu'en deux mille dix.", 'fatigue'), ('elise', "Vous voulez qu'on s'arrête ?"), ('gabriel', 'Surtout pas.', 'tension')],
        kw=C('elise', 'torche', 'gabriel')),
+     B('cu', 3, [('gabriel', 'Ne regardez pas la lumière des drones. Elle reconnaît les visages.', 'tension')], kw=C('gabriel', 'torche', 'nathan')),
      B('cu', 3, [('nathan', "Elle nous regarde courir depuis le début. Pourquoi elle nous arrête pas ?", 'peur'),
                  ('gabriel', "Parce qu'elle veut qu'on arrive quelque part.", 'peur')], kw=C('nathan', 'torche', 'gabriel')),
      B('ecran_mort', 4, [('elise', 'Non. Pas le pont.', 'peur'), ('nathan', "Il reste l'écluse."),
@@ -137,7 +144,10 @@ SEQS = [
                  ('nathan', "Elle a jamais rien promis pour lui.", 'colere')], kw=C('nathan', 'sol_blesse', 'elise')),
      B('cu', 3, [('elise', 'Nathan, ton sourcil. Tu saignes.', 'peur'), ('nathan', "C'est rien."),
                  ('elise', 'Le sourcil gauche. C\'est la cicatrice. Celle de la vidéo.', 'sidere'),
-                 ('nathan', "Alors tout ce qu'il a dit va arriver.", 'sidere')], kw=C('elise', 'sol_blesse', 'nathan'))],
+                 ('nathan', "Alors tout ce qu'il a dit va arriver.", 'sidere')], kw=C('elise', 'sol_blesse', 'nathan')),
+     B('cu', 3, [('elise', "Pas tout. Il a dit aussi qu'il restait la clé.", 'tension'), ('nathan', 'Il reste la clé.', 'tension')], kw=C('nathan', 'sol_blesse', 'elise')),
+     B('cu', 3, [('elise', 'On peut pas le laisser là.', 'tristesse'), ('nathan', 'On reviendra.', 'tristesse'),
+                 ('nathan', 'Je vous le promets, Gabriel.', 'tristesse')], kw=C('nathan', 'sol_blesse', 'elise'), mood='aveu')],
 
     # 5.7 Orphée, seul bâtiment allumé
     [B('ville_orphee', 5, [('elise', "C'est le seul bâtiment allumé de la ville.", 'tension'), ('nathan', 'Elle nous attend.', 'tension')], lead=1.8),
@@ -395,6 +405,10 @@ def shot_cu(t, dur, T, f, kw):
         if who == 'nathan' and T > T_IMPACT:
             wound(img, x_main, 215, 1.2)
     rain(img, 90, (100, 106, 120), seed=f + 5)
+    if lying:  # caméra posée au ras du sol, cadre incliné
+        img = img.rotate(-16, resample=Image.BICUBIC, fillcolor=(8, 8, 10))
+        z = 1.2
+        img = img.crop((int(W * (z - 1) / 2), int(H * (z - 1) / 2), int(W - W * (z - 1) / 2), int(H - H * (z - 1) / 2))).resize((W, H))
     return img
 
 
