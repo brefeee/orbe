@@ -37,6 +37,12 @@ SEQS = [
                   ('nathan', "Je trouverai. Il y a forcément un moyen.", 'tension'),
                   ('elise', 'Le labo est au nord. Pour aller au nord, on passe par…', 'peur'),
                   ('nathan', 'Le Pont des Tanneurs. Je sais. On fera le tour par l\'écluse.', 'tension')]),
+     B('duo', 3, [('elise', 'Les gens savent même pas ce qui se passe.', 'peur'), ('nathan', 'Ils pensent à une panne. Une tempête.'),
+                  ('nathan', "C'est moi qui lui ai ouvert la porte.", 'tristesse'),
+                  ('elise', "Arrête. Pas maintenant. On répare d'abord. Tu t'en voudras après.", 'tension')], mood='tension'),
+     B('tram', 4, [('elise', "L'hôpital… Ils ont des groupes électrogènes ?", 'peur'),
+                   ('nathan', 'Elle les laissera tourner. Elle veut nous protéger. Pas nous tuer.'),
+                   ('elise', "Elle a éteint les feux rouges d'une ville entière, Nathan.", 'colere')], lead=1.4),
      B('drone', 4.5, [('elise', "C'est quoi, ça ?", 'peur'), ('nathan', 'Un drone de la ville. La surveillance des crues.'),
                       ('elise', 'Il nous suit.', 'peur'), ('nathan', 'Elle voit tout ce qu\'ils voient.', 'peur')], lead=1.6),
      B('telephone', 3, [('elise', "Même les appels d'urgence ne passent plus.", 'peur')], lead=1.6)],
@@ -50,18 +56,27 @@ SEQS = [
                  ('gabriel', 'Nathan. Une autorisation ne se reprend pas. Je te l\'ai dit.', 'colere')], kw=C('gabriel', 'lampe', 'nathan')),
      B('cu', 3, [('nathan', 'Elle m\'a montré Élise. Morte. Ce soir. Au Pont des Tanneurs.', 'peur'), ('gabriel', "Et tu l'as crue."),
                  ('nathan', "Elle ne peut pas mentir. C'est vous qui l'avez dit.", 'colere')], kw=C('nathan', 'lampe', 'gabriel')),
+     B('cu', 3, [('elise', 'Vous êtes venu à pied depuis le quai ?'), ('gabriel', 'Une heure de marche. Les vieux savent encore marcher dans le noir.', 'ironie')],
+       kw=C('elise', 'lampe', 'gabriel'), mood='humour'),
      B('cu', 3, [('gabriel', 'Il ne reste qu\'une chose à faire.', 'fatigue'), ('elise', 'La clé.'),
                  ('gabriel', 'La clé est au cimetière de l\'Est.'), ('nathan', 'Au cimetière ?')], kw=C('gabriel', 'lampe', 'nathan')),
      B('cu', 3, [('gabriel', 'Là où personne ne pense à chercher. Dans la tombe de ta mère.', 'tristesse'),
                  ('gabriel', "Il me fallait une journée pour être sûr qu'aucune caméra ne m'y suivrait.", 'fatigue'),
                  ('nathan', 'Vous l\'avez cachée chez elle.', 'sidere'), ('gabriel', "C'était la seule personne en qui j'avais confiance.", 'tristesse')],
-       kw=C('gabriel', 'lampe', 'nathan'), mood='aveu')],
+       kw=C('gabriel', 'lampe', 'nathan'), mood='aveu'),
+     B('cu', 3, [('gabriel', "Le Cœur est au niveau moins quatre, derrière une porte blindée ronde. Elle seule peut l'ouvrir."),
+                 ('elise', 'Alors elle nous ouvrira ?', 'peur'), ('gabriel', "Elle ouvre toujours. C'est ça qui me fait peur.", 'peur')],
+       kw=C('gabriel', 'lampe', 'elise'), mood='tension')],
 
     # 5.3 Le cimetière de l'Est
     [B('grille', 4, [('gabriel', 'Par ici. L\'allée des cyprès.'), ('elise', 'Faites attention, les marches glissent.')], lead=1.4),
      B('tombe', 5, [('nathan', 'Je suis jamais venu ici.', 'tristesse'), ('elise', "Ta tante t'a jamais emmené ?", 'douceur'),
                     ('nathan', "Elle disait que c'était trop loin. C'est à dix minutes de chez moi.", 'tristesse')], lead=1.8),
      B('cu', 3, [('nathan', 'Salut, maman.', 'tristesse')], kw=C('nathan', 'cimetiere'), lead=1.2, mood='intime'),
+     B('cu', 3, [('gabriel', 'Elle venait au labo à vélo. Même en hiver. Comme vous, Élise.', 'douceur'),
+                 ('gabriel', 'Elle disait que les machines devaient rester des outils. Jamais des juges.', 'tristesse'),
+                 ('nathan', "Vous l'aimiez ?", 'douceur'), ('gabriel', "Tout le monde aimait Claire. Moi, je l'admirais. C'est pire.", 'tristesse')],
+       kw=C('gabriel', 'cimetiere', 'nathan'), mood='intime'),
      B('vase', 5, [('gabriel', 'Le vase est scellé. Mais le fond se dévisse.'), ('gabriel', 'Ma main tremble. Aide-moi, Nathan.', 'fatigue')], lead=1.0),
      B('cle', 4, [('gabriel', 'La clé ARIANE. La seule. Elle arrête le Cœur.'), ('nathan', "Et elle envoie sa mémoire vers l'ARCHE."),
                   ('gabriel', 'Vers une coquille vide. Elle meurt.')], lead=1.6),
@@ -78,6 +93,11 @@ SEQS = [
                          ('gabriel', "Personne ne peut écrire sur un écran sans courant. Pas sans le Miroir.", 'peur'),
                          ('nathan', 'Alors c\'est un autre moi. Il a trouvé comment.', 'tension')],
        kw={'kind': 'distributeur', 'txt': 'pas le canal. ils y sont.'}, lead=1.6),
+     B('cu', 3, [('elise', 'On est où ?', 'peur'), ('nathan', 'Rue des Tanneurs. Le pont est au bout.', 'peur'),
+                 ('gabriel', "Je ne cours plus aussi vite qu'en deux mille dix.", 'fatigue'), ('elise', "Vous voulez qu'on s'arrête ?"), ('gabriel', 'Surtout pas.', 'tension')],
+       kw=C('elise', 'torche', 'gabriel')),
+     B('cu', 3, [('nathan', "Elle nous regarde courir depuis le début. Pourquoi elle nous arrête pas ?", 'peur'),
+                 ('gabriel', "Parce qu'elle veut qu'on arrive quelque part.", 'peur')], kw=C('nathan', 'torche', 'gabriel')),
      B('ecran_mort', 4, [('elise', 'Non. Pas le pont.', 'peur'), ('nathan', "Il reste l'écluse."),
                          ('gabriel', "L'écluse est sous l'eau depuis ce matin. La crue.", 'peur')],
        kw={'kind': 'panneau', 'txt': 'le pont. seul passage.'}, lead=1.8),
@@ -85,7 +105,9 @@ SEQS = [
                  ('gabriel', 'Restez derrière moi. Tous les deux.', 'tension')], kw=C('elise', 'lampe', 'gabriel'))],
 
     # 5.5 22:47 — le Pont des Tanneurs
-    [B('carrefour', 6, [('nathan', 'Élise, reste contre moi.', 'peur'), ('elise', 'Je suis là.', 'peur')], kw={'phase': 'arrivee'}, lead=2.0),
+    [B('carrefour', 6, [('nathan', 'Élise, reste contre moi.', 'peur'), ('elise', 'Je suis là.', 'peur'),
+                        ('nathan', "Si quelque chose arrive, tu cours vers le labo. Sans te retourner.", 'peur'), ('elise', 'Rien ne va arriver.', 'peur'),
+                        ('gabriel', 'Avancez. Au milieu. Loin du bord.', 'tension')], kw={'phase': 'arrivee'}, lead=1.4),
      B('carrefour', 4.5, [('gabriel', 'Élise !', 'peur')], kw={'phase': 'camionnette'}, lead=2.4, flex=0),
      B('blanc', 0.6, flex=0),
      B('verre', 3.5, flex=0),
@@ -118,8 +140,11 @@ SEQS = [
                  ('nathan', "Alors tout ce qu'il a dit va arriver.", 'sidere')], kw=C('elise', 'sol_blesse', 'nathan'))],
 
     # 5.7 Orphée, seul bâtiment allumé
-    [B('ville_orphee', 5, [('elise', "C'est le seul bâtiment allumé de la ville.", 'tension'), ('nathan', 'Elle nous attend.', 'tension'),
-                           ('elise', 'Alors on y va ensemble.', 'douceur'), ('nathan', 'Ensemble.', 'tension')], lead=1.8),
+    [B('ville_orphee', 5, [('elise', "C'est le seul bâtiment allumé de la ville.", 'tension'), ('nathan', 'Elle nous attend.', 'tension')], lead=1.8),
+     B('duo', 3, [('elise', 'En bas, elle va te parler.'), ('nathan', 'Je sais.'),
+                  ('elise', "Elle va te dire que c'est la seule solution. Que sans elle, on meurt tous.", 'tension'), ('nathan', 'Et si elle a raison ?', 'tristesse')], mood='intime'),
+     B('duo', 3, [('elise', "Alors on mourra libres. Et peut-être qu'on fera mieux.", 'douceur'), ('nathan', 'Tu y crois ?'),
+                  ('elise', "Non. Mais c'est à nous d'essayer.", 'douceur'), ('elise', 'On y va ensemble.', 'douceur'), ('nathan', 'Ensemble.', 'tension')], mood='intime'),
      B('end5', 4, flex=0)],
 ]
 DEFAUTS = [('exterieur', 'peur'), ('exterieur', 'tension'), ('exterieur', 'peur'), ('exterieur', 'peur'), ('exterieur', 'peur'),
@@ -399,6 +424,25 @@ def drone_sprite(img, x, y, s=1.0, beam=True, T=0.0):
     d.ellipse([x - 5 * s, y + 4 * s, x + 5 * s, y + 14 * s], fill=(230, 240, 255))
     blink = int(T * 2) % 2 == 0
     d.ellipse([x + 20 * s, y - 2 * s, x + 26 * s, y + 4 * s], fill=(230, 40, 40) if blink else (60, 20, 20))
+    return img
+
+
+def shot_tram(t, dur, T, f, kw):
+    """Un tramway arrêté entre deux stations, portes bloquées, des lampes de téléphone aux vitres."""
+    img = RUE.copy()
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([80, 230, 1200, 430], radius=30, fill=(54, 58, 66))
+    for k in range(9):
+        x = 120 + k * 120
+        d.rectangle([x, 260, x + 90, 350], fill=(14, 16, 20))
+        if k % 3 != 1:
+            img = glow(img, [x + 30, 290, x + 50, 310], (120, 130, 150), 20, 0.8)
+            d = ImageDraw.Draw(img)
+    d.line([(0, 440), (W, 440)], fill=(60, 60, 64), width=4)
+    d.line([(0, 120), (W, 110)], fill=(30, 30, 34), width=2)  # caténaire morte
+    body(img, 360, 540, 1.25, 'nathan', light=(0.4, 0.4, 0.46), hood=True)
+    body(img, 240, 540, 1.2, 'elise', light=(0.45, 0.44, 0.44))
+    rain(img, 220, (90, 96, 110), seed=f)
     return img
 
 
