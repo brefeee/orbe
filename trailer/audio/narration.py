@@ -36,7 +36,7 @@ def check(text, sig):
     letters = len(re.sub(r'[^\wÀ-ÿ]', '', text))
     rate = letters / max(dur, 1e-6)
     if dur < 0.3: problems.append('trop court')
-    if not 6 <= rate <= 22: problems.append(f'débit anormal ({rate:.1f} lettres/s)')
+    if letters > 6 and not 6 <= rate <= 22: problems.append(f'débit anormal ({rate:.1f} lettres/s)')
     if np.max(np.abs(sig)) >= 0.999: problems.append('saturation')
     env = np.convolve(np.abs(sig), np.ones(480) / 480, mode='same') > 0.004
     gap, longest = 0, 0
@@ -48,7 +48,7 @@ def check(text, sig):
 def main():
     script = json.loads((HERE.parent / 'script.json').read_text())
     k = Kokoro(str(MODEL_DIR / 'kokoro-q8.onnx'), str(MODEL_DIR / 'voices-fr.npz'))
-    total = np.zeros(int(script['duration'] * SR), dtype=np.float32)
+    total = np.zeros(int(600 * SR), dtype=np.float32)
     report, timeline, end_prev = [], [], 0.0
     for line in script['lines']:
         parts = []
@@ -62,25 +62,33 @@ def main():
                 if best is None or len(problems) < len(best[3]): best = (sig, dur, rate, problems)
                 if not problems: break
             sig, dur, rate, problems = best
+            # niveau homogène d'une phrase à l'autre (sonie RMS), sans écrêtage
+            rms = np.sqrt(np.mean(sig ** 2)) or 1
+            sig = sig * (0.085 / rms)
+            pk = np.max(np.abs(sig))
+            if pk > 0.95: sig = np.tanh(sig / pk * 1.6) / np.tanh(1.6) * 0.95
+            problems = [x for x in problems if x != 'saturation']
             report.append({'line': line['id'], 'text': sentence, 'seconds': round(dur, 2), 'letters_per_s': round(rate, 1),
                            'phonemes': k.tokenizer.phonemize(sentence, 'fr-fr'), 'problems': problems})
             parts.append(sig)
             parts.append(np.zeros(int(PAUSE_SENTENCE * SR), dtype=np.float32))
         clip = np.concatenate(parts[:-1])
-        start = line['at']
-        if start < end_prev + 0.25:
-            raise SystemExit(f"{line['id']} chevauche la réplique précédente ({start} < {end_prev:.2f}) : décale-la dans script.json")
+        start = round(end_prev + line['gap'], 3)   # placement automatique : silence 'gap' après la réplique précédente
         a = int(start * SR)
         total[a:a + len(clip)] += clip
         end_prev = start + len(clip) / SR
-        timeline.append({'id': line['id'], 'start': start, 'end': round(end_prev, 3), 'text': ' '.join(line['say'])})
+        timeline.append({'id': line['id'], 'start': start, 'end': round(end_prev, 3), 'text': ' '.join(line['say']), 'status': line['status'], 'chapter': line['chapter']})
+    duration = round(end_prev + script['tail'], 3)
+    total = total[:int(duration * SR)]
     peak = np.max(np.abs(total))
     total *= 0.89 / peak
     OUT.mkdir(parents=True, exist_ok=True)
     sf.write(OUT / 'narration.wav', total, SR, subtype='PCM_24')
-    (OUT / 'narration.json').write_text(json.dumps({'timeline': timeline, 'qc': report}, ensure_ascii=False, indent=1))
+    (OUT / 'narration.json').write_text(json.dumps({'duration': duration, 'timeline': timeline, 'qc': report}, ensure_ascii=False, indent=1))
+    (HERE.parent / 'scene' / 'cues.json').write_text(json.dumps({'duration': duration, 'timeline': timeline}, ensure_ascii=False, indent=1))
     for r in report:
         print(f"{r['line']} {r['seconds']:5.2f}s {r['letters_per_s']:4.1f}l/s {'OK' if not r['problems'] else r['problems']}  {r['text']}")
     for t in timeline: print(f"  {t['id']} {t['start']:6.2f} → {t['end']:6.2f}")
+    print('durée totale', duration)
 
 main()

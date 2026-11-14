@@ -1,136 +1,35 @@
 {
-  "_note": "Narration de la bande-annonce. Uniquement des faits réels sur ORBE ; l'acte IV est présenté comme une ambition (« Demain »). 'say' = texte prononcé (orthographe adaptée à la voix), 'show' = sous-titre.",
+  "_note": "Narration de la bande-annonce. 'gap' = silence avant la réplique (s). 'status' : 'available' (fonction présente dans ORBE aujourd'hui), 'dev' (en développement, dite au futur et marquée à l'écran). 'chapter' : titre affiché à l'écran.",
   "lines": [
-    {
-      "id": "L01",
-      "at": 2.0,
-      "act": "I",
-      "say": [
-        "Chaque jour, nous cherchons.",
-        "Nous enregistrons.",
-        "Nous oublions."
-      ]
-    },
-    {
-      "id": "L02",
-      "at": 8.2,
-      "act": "I",
-      "say": [
-        "Nos connaissances sont éparpillées, dans des fichiers, des onglets, des applications qui ne se parlent pas."
-      ]
-    },
-    {
-      "id": "L03",
-      "at": 18.0,
-      "act": "II",
-      "say": [
-        "Et si tout partait d'un seul point ?"
-      ]
-    },
-    {
-      "id": "L04",
-      "at": 28.6,
-      "act": "II",
-      "say": [
-        "Orbe.",
-        "Une carte vivante de tout ce que tu sais, où chaque connaissance trouve sa place, et chaque lien a un sens."
-      ]
-    },
-    {
-      "id": "L05",
-      "at": 37.2,
-      "act": "III",
-      "say": [
-        "D'un côté, le savoir du monde : l'univers, la Terre, le vivant, les sociétés, les techniques."
-      ]
-    },
-    {
-      "id": "L06",
-      "at": 44.2,
-      "act": "III",
-      "say": [
-        "Plus d'un milliard huit cents millions d'étoiles du catalogue Gaïa, explorables en direct.",
-        "Et pour chaque point, ses sources."
-      ]
-    },
-    {
-      "id": "L07",
-      "at": 53.0,
-      "act": "III",
-      "say": [
-        "Les informations se rangent, se relient, et gardent leur fiabilité, leur origine et leur histoire."
-      ]
-    },
-    {
-      "id": "L08",
-      "at": 60.4,
-      "act": "III",
-      "say": [
-        "Connecte tes intelligences artificielles, et fais-les travailler ensemble."
-      ]
-    },
-    {
-      "id": "L09",
-      "at": 65.0,
-      "act": "III",
-      "say": [
-        "L'une transforme ta question en une demande claire et structurée.",
-        "Une autre accomplit le travail.",
-        "Une troisième crée les images."
-      ]
-    },
-    {
-      "id": "L10",
-      "at": 74.2,
-      "act": "III",
-      "say": [
-        "Elles lisent ta carte, la complètent, et tu vois exactement ce qu'elles ont ajouté."
-      ]
-    },
-    {
-      "id": "L11",
-      "at": 80.6,
-      "act": "III",
-      "say": [
-        "Et ce qui est privé reste privé.",
-        "Chiffré, sur ton ordinateur.",
-        "Rien ne devient public sans ta décision."
-      ]
-    },
-    {
-      "id": "L12",
-      "at": 89.0,
-      "act": "IV",
-      "say": [
-        "Demain, Orbe ira plus loin : relier tes services et tes applications, agir sur ton ordinateur avec ton accord, te répondre de vive voix."
-      ]
-    },
-    {
-      "id": "L13",
-      "at": 98.4,
-      "act": "IV",
-      "say": [
-        "Réunir les connaissances, les intelligences et les outils, en un seul écosystème."
-      ]
-    },
-    {
-      "id": "L14",
-      "at": 108.2,
-      "act": "V",
-      "say": [
-        "Orbe.",
-        "Tout ce que tu sais, en un seul point."
-      ]
-    },
-    {
-      "id": "L15",
-      "at": 113.6,
-      "act": "V",
-      "say": [
-        "Disponible le premier décembre deux mille vingt-six.",
-        "Découvre Orbe."
-      ]
-    }
+    { "id": "L01", "gap": 1.8, "chapter": "", "status": null, "say": ["Chaque jour, nous cherchons.", "Nous enregistrons.", "Nous oublions."] },
+    { "id": "L02", "gap": 1.4, "chapter": "", "status": null, "say": ["Nos connaissances, nos outils et nos intelligences artificielles sont dispersés, dans des applications qui ne se parlent pas."] },
+    { "id": "L03", "gap": 4.2, "chapter": "", "status": null, "say": ["Et si tout partait d'un seul point ?"] },
+    { "id": "L04", "gap": 7.4, "chapter": "", "status": null, "say": ["Orbe.", "Un univers où tes connaissances, tes intelligences artificielles et les personnes qui comptent pour toi se rejoignent."] },
+
+    { "id": "L05", "gap": 2.0, "chapter": "La carte", "status": "available", "say": ["Au cœur d'Orbe, une carte vivante.", "Chaque connaissance est un point.", "Chaque lien dit pourquoi deux idées se rejoignent."] },
+    { "id": "L06", "gap": 0.9, "chapter": "La carte", "status": "available", "say": ["Tu entres dans un sujet, tu prends du recul, tu vois tout.", "Une recherche, et le chemin s'illumine."] },
+    { "id": "L07", "gap": 0.9, "chapter": "La carte", "status": "available", "say": ["Chaque point garde ses sources, ses images et sa fiabilité.", "Les savoirs du monde y sont déjà, des lieux de la Terre aux étoiles du catalogue Gaïa."] },
+    { "id": "L08", "gap": 0.9, "chapter": "La carte", "status": "dev", "say": ["Et bientôt, les connaissances qui ne sont pas personnelles pourront être partagées avec les autres."] },
+
+    { "id": "L09", "gap": 2.0, "chapter": "L'intelligence", "status": "available", "say": ["Orbe n'est pas un simple chatbot.", "C'est un environnement où plusieurs intelligences artificielles travaillent ensemble."] },
+    { "id": "L10", "gap": 0.9, "chapter": "L'intelligence", "status": "available", "say": ["Tu connectes celles que tu utilises déjà.", "L'une transforme ta demande en consigne précise, une autre accomplit le travail, une troisième crée les images."] },
+    { "id": "L11", "gap": 0.9, "chapter": "L'intelligence", "status": "available", "say": ["Elles s'appuient sur ta carte comme sur une mémoire : elles la lisent, la complètent, et tu vois chacun de leurs ajouts."] },
+    { "id": "L12", "gap": 1.4, "chapter": "L'intelligence", "status": "dev", "say": ["Orbe prépare la suite.", "Des agents qui découperont une mission en sous-tâches, et confieront chacune à l'intelligence la plus compétente."] },
+    { "id": "L13", "gap": 0.9, "chapter": "L'intelligence", "status": "dev", "say": ["Une intelligence qui pourra agir sur ton ordinateur, avec ton accord, étape par étape."] },
+    { "id": "L14", "gap": 0.9, "chapter": "L'intelligence", "status": "dev", "say": ["La création de vidéos.", "Et une voix naturelle, pour parler avec Orbe comme avec une personne."] },
+
+    { "id": "L15", "gap": 2.0, "chapter": "Le réseau", "status": "dev", "say": ["Car le savoir grandit quand il se partage.", "Orbe prépare son propre réseau social."] },
+    { "id": "L16", "gap": 0.9, "chapter": "Le réseau", "status": "dev", "say": ["Publier, réagir, commenter.", "Retrouver ses amis, échanger en privé, rejoindre des communautés."] },
+    { "id": "L17", "gap": 0.9, "chapter": "Le réseau", "status": "dev", "say": ["Découvrir des publications, des créateurs et des connaissances, au fil d'un flux pensé pour apprendre."] },
+    { "id": "L18", "gap": 0.9, "chapter": "Le réseau", "status": "dev", "say": ["Et construire ensemble : une connaissance partagée devient le point de départ d'une autre."] },
+
+    { "id": "L19", "gap": 2.0, "chapter": "L'écosystème", "status": "dev", "say": ["Autour, tout un écosystème se met en place.", "Des connexions vers tes applications et tes services, des automatisations, et un seul endroit pour gérer chaque accès."] },
+    { "id": "L20", "gap": 0.9, "chapter": "L'écosystème", "status": "available", "say": ["Et une règle qui ne change pas : ce qui est privé reste privé.", "Tes données personnelles sont chiffrées, sur ton ordinateur.", "Rien ne devient public sans ta décision."] },
+    { "id": "L21", "gap": 1.2, "chapter": "", "status": null, "say": ["Connaissances.", "Intelligences.", "Communauté.", "Un seul univers."] },
+
+    { "id": "L22", "gap": 4.6, "chapter": "", "status": null, "say": ["Orbe.", "Tout ce que tu sais, en un seul point."] },
+    { "id": "L23", "gap": 1.4, "chapter": "", "status": null, "say": ["Disponible le premier décembre deux mille vingt-six."] },
+    { "id": "L24", "gap": 0.8, "chapter": "", "status": null, "say": ["Découvre Orbe."] }
   ],
-  "duration": 120.0
+  "tail": 2.6
 }

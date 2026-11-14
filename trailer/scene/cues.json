@@ -1,0 +1,197 @@
+{
+ "duration": 188.328,
+ "timeline": [
+  {
+   "id": "L01",
+   "start": 1.8,
+   "end": 6.018,
+   "text": "Chaque jour, nous cherchons. Nous enregistrons. Nous oublions.",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L02",
+   "start": 7.418,
+   "end": 14.495,
+   "text": "Nos connaissances, nos outils et nos intelligences artificielles sont dispersés, dans des applications qui ne se parlent pas.",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L03",
+   "start": 18.695,
+   "end": 20.51,
+   "text": "Et si tout partait d'un seul point ?",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L04",
+   "start": 27.91,
+   "end": 35.593,
+   "text": "Orbe. Un univers où tes connaissances, tes intelligences artificielles et les personnes qui comptent pour toi se rejoignent.",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L05",
+   "start": 37.593,
+   "end": 44.675,
+   "text": "Au cœur d'Orbe, une carte vivante. Chaque connaissance est un point. Chaque lien dit pourquoi deux idées se rejoignent.",
+   "status": "available",
+   "chapter": "La carte"
+  },
+  {
+   "id": "L06",
+   "start": 45.575,
+   "end": 51.357,
+   "text": "Tu entres dans un sujet, tu prends du recul, tu vois tout. Une recherche, et le chemin s'illumine.",
+   "status": "available",
+   "chapter": "La carte"
+  },
+  {
+   "id": "L07",
+   "start": 52.257,
+   "end": 60.99,
+   "text": "Chaque point garde ses sources, ses images et sa fiabilité. Les savoirs du monde y sont déjà, des lieux de la Terre aux étoiles du catalogue Gaïa.",
+   "status": "available",
+   "chapter": "La carte"
+  },
+  {
+   "id": "L08",
+   "start": 61.89,
+   "end": 66.971,
+   "text": "Et bientôt, les connaissances qui ne sont pas personnelles pourront être partagées avec les autres.",
+   "status": "dev",
+   "chapter": "La carte"
+  },
+  {
+   "id": "L09",
+   "start": 68.971,
+   "end": 75.905,
+   "text": "Orbe n'est pas un simple chatbot. C'est un environnement où plusieurs intelligences artificielles travaillent ensemble.",
+   "status": "available",
+   "chapter": "L'intelligence"
+  },
+  {
+   "id": "L10",
+   "start": 76.805,
+   "end": 85.999,
+   "text": "Tu connectes celles que tu utilises déjà. L'une transforme ta demande en consigne précise, une autre accomplit le travail, une troisième crée les images.",
+   "status": "available",
+   "chapter": "L'intelligence"
+  },
+  {
+   "id": "L11",
+   "start": 86.899,
+   "end": 93.03,
+   "text": "Elles s'appuient sur ta carte comme sur une mémoire : elles la lisent, la complètent, et tu vois chacun de leurs ajouts.",
+   "status": "available",
+   "chapter": "L'intelligence"
+  },
+  {
+   "id": "L12",
+   "start": 94.43,
+   "end": 102.788,
+   "text": "Orbe prépare la suite. Des agents qui découperont une mission en sous-tâches, et confieront chacune à l'intelligence la plus compétente.",
+   "status": "dev",
+   "chapter": "L'intelligence"
+  },
+  {
+   "id": "L13",
+   "start": 103.688,
+   "end": 109.169,
+   "text": "Une intelligence qui pourra agir sur ton ordinateur, avec ton accord, étape par étape.",
+   "status": "dev",
+   "chapter": "L'intelligence"
+  },
+  {
+   "id": "L14",
+   "start": 110.069,
+   "end": 115.674,
+   "text": "La création de vidéos. Et une voix naturelle, pour parler avec Orbe comme avec une personne.",
+   "status": "dev",
+   "chapter": "L'intelligence"
+  },
+  {
+   "id": "L15",
+   "start": 117.674,
+   "end": 122.883,
+   "text": "Car le savoir grandit quand il se partage. Orbe prépare son propre réseau social.",
+   "status": "dev",
+   "chapter": "Le réseau"
+  },
+  {
+   "id": "L16",
+   "start": 123.783,
+   "end": 129.633,
+   "text": "Publier, réagir, commenter. Retrouver ses amis, échanger en privé, rejoindre des communautés.",
+   "status": "dev",
+   "chapter": "Le réseau"
+  },
+  {
+   "id": "L17",
+   "start": 130.533,
+   "end": 136.429,
+   "text": "Découvrir des publications, des créateurs et des connaissances, au fil d'un flux pensé pour apprendre.",
+   "status": "dev",
+   "chapter": "Le réseau"
+  },
+  {
+   "id": "L18",
+   "start": 137.329,
+   "end": 142.172,
+   "text": "Et construire ensemble : une connaissance partagée devient le point de départ d'une autre.",
+   "status": "dev",
+   "chapter": "Le réseau"
+  },
+  {
+   "id": "L19",
+   "start": 144.172,
+   "end": 153.99,
+   "text": "Autour, tout un écosystème se met en place. Des connexions vers tes applications et tes services, des automatisations, et un seul endroit pour gérer chaque accès.",
+   "status": "dev",
+   "chapter": "L'écosystème"
+  },
+  {
+   "id": "L20",
+   "start": 154.89,
+   "end": 164.695,
+   "text": "Et une règle qui ne change pas : ce qui est privé reste privé. Tes données personnelles sont chiffrées, sur ton ordinateur. Rien ne devient public sans ta décision.",
+   "status": "available",
+   "chapter": "L'écosystème"
+  },
+  {
+   "id": "L21",
+   "start": 165.895,
+   "end": 171.424,
+   "text": "Connaissances. Intelligences. Communauté. Un seul univers.",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L22",
+   "start": 176.024,
+   "end": 179.134,
+   "text": "Orbe. Tout ce que tu sais, en un seul point.",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L23",
+   "start": 180.534,
+   "end": 183.715,
+   "text": "Disponible le premier décembre deux mille vingt-six.",
+   "status": null,
+   "chapter": ""
+  },
+  {
+   "id": "L24",
+   "start": 184.515,
+   "end": 185.728,
+   "text": "Découvre Orbe.",
+   "status": null,
+   "chapter": ""
+  }
+ ]
+}

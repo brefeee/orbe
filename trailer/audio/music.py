@@ -11,8 +11,9 @@ from scipy.signal import butter, sosfilt, fftconvolve
 import soundfile as sf
 
 SR = 48000
-DUR = 120.0
 BUILD = Path(sys.argv[1])
+CUES = json.loads((BUILD / 'narration.json').read_text())
+DUR = CUES['duration']
 N = int(DUR * SR)
 rng = np.random.default_rng(2026)
 L = np.zeros(N); R = np.zeros(N)          # bus « sec »
@@ -160,101 +161,138 @@ def drone(notes, at, dur, gain=.08):
     for note in notes: s += np.sin(2 * np.pi * hz(note) * t + .3 * np.sin(2 * np.pi * .1 * t))
     place(s * env_adsr(n, 3, 1, 1, 2.5) / len(notes), at, gain, rev=.3)
 
+# ------------------------------------------------------------------ repères (identiques à scene/main.js)
+LN = {l['id']: l for l in CUES['timeline']}
+S_ = lambda i: LN[i]['start']
+E_ = lambda i: LN[i]['end']
+import re as _re
+def sentence(i, n):
+    line = LN[i]; parts = _re.findall(r'[^.?!:]+[.?!:]+', line['text']) or [line['text']]
+    total = line['end'] - line['start'] - .42 * (len(parts) - 1)
+    letters = [len(_re.sub(r'[^\w]', '', p_)) + 4 for p_ in parts]; sm = sum(letters); t = line['start']
+    for k in range(min(n, len(parts))): t += total * letters[k] / sm + .42
+    return t
+T = dict(black=E_('L02') + 2.0, point=S_('L03') - 1.3, burst=E_('L03') + 1.7, map=S_('L05') - .45, sources=S_('L07') - .4, share=S_('L08') - .4,
+         chat=S_('L09') - .55, ai=S_('L10') - .35, agents=S_('L12') - .5, pc=S_('L13') - .35, media=S_('L14') - .35, people=S_('L15') - .55,
+         posts=S_('L16') - .3, feed=S_('L17') - .3, collab=S_('L18') - .3, eco=S_('L19') - .55, privacy=S_('L20') - .3, converge=S_('L21') - .4, impact=S_('L22') - 3.0)
+
 # ------------------------------------------------------------------ partition
 BEAT = 0.6  # 100 pulsations par minute
 
-# ACTE I — le monde éparpillé : bourdon sombre, cloches désaccordées, cliquetis, tension qui monte puis se coupe net
-drone(['D1', 'A1'], 0, 15.6, .16)
-wind(0, 15.6, .05)
-for i, (tm, nt) in enumerate([(1.0, 'A4'), (2.9, 'F5'), (4.6, 'E5'), (6.2, 'C5'), (8.0, 'D5'), (9.5, 'A4'), (11.0, 'F5'), (12.4, 'G5')]):
-    bell(nt, tm, .05, 5, pan=(-.6, .6)[i % 2], ratio=3.51, index=1.5)
-for tm in rng.uniform(1, 15, 46): click(float(tm), .03 + rng.random() * .03, float(rng.uniform(-.8, .8)))
-strings(['D4', 'Eb4', 'A4'], 9.0, 6.6, .07, attack=5, release=.08, bright=1800)
-reverse_swell(13.6, 2.0, .05)
-
-# ACTE II — le point : silence, une note de cristal, puis la naissance de la galaxie
-bell('A6', 16.55, .09, 6, ratio=2.0, index=.8)
-bell('D6', 16.6, .05, 6, ratio=2.0, index=.6)
-choir(['D3', 'A3', 'D4'], 17.2, 5.3, .10, attack=3.5, release=1)
-reverse_swell(19.8, 2.65, .14)
-boom(22.45, .95, 5)
-strings(['Bb2', 'F3', 'D4', 'F4', 'C5'], 22.45, 6.2, .16, attack=.6, release=2.5, bright=3200)
-choir(['Bb3', 'D4', 'F4'], 22.6, 6.0, .08, attack=1.2)
-# installation : cordes lentes + scintillement
-prog = [(['D3', 'A3', 'F4'], 'D2'), (['Bb2', 'F3', 'D4'], 'Bb1'), (['F3', 'C4', 'A4'], 'F2'), (['C3', 'G3', 'E4'], 'C2')]
-for i, (ch, _) in enumerate(prog): strings(ch, 28.6 + i * 2, 2.1, .3, attack=.8, release=1.2)
-for i, (_, root) in enumerate(prog): sub(root, 28.6 + i * 2, 2.0, .12)
-arp = ['D5', 'F5', 'A5', 'C6', 'A5', 'F5']
-for k in range(int((36.5 - 30.0) / (BEAT / 4))):
-    tm = 30.0 + k * BEAT / 4; pluck(arp[k % len(arp)], tm, .06 * min(1, k / 20), 3500, pan=(-.4, .4)[k % 2], dur=.35)
-
-# ACTE III — la pulsation : connaissances, structure, intelligences
-def bar_section(t0, t1, prog, drums=True, hats=False, arp_notes=None, arp_gain=.035, cutoff=(1500, 4000), bass=True, str_gain=.09):
-    nbar = int(round((t1 - t0) / (4 * BEAT)))
-    for b in range(nbar):
-        ch, root = prog[b % len(prog)]; tb = t0 + b * 4 * BEAT
-        strings(ch, tb, 4 * BEAT, str_gain, attack=.4, release=.9)
+def bar_section(t0, t1, prog, drums=True, hats=False, arp_notes=None, arp_gain=.035, cutoff=(1500, 4000), bass=True, str_gain=.09, kick_gain=.42, half=False):
+    nbar = max(1, int(round((t1 - t0) / (4 * BEAT))))
+    for b_ in range(nbar):
+        ch, root = prog[b_ % len(prog)]; tb = t0 + b_ * 4 * BEAT
+        if tb >= t1 - .3: break
+        strings(ch, tb, min(4 * BEAT, t1 - tb), str_gain, attack=.4, release=.9)
         for q in range(4):
             tq = tb + q * BEAT
-            if drums: kick(tq, .42)
+            if tq >= t1: break
+            if drums and (not half or q % 2 == 0): kick(tq, kick_gain)
             if hats: hat(tq + BEAT / 2, .035, pan=.3)
-            if bass:
-                sub(root, tq, BEAT * .45, .16); sub(root, tq + BEAT / 2, BEAT * .4, .11)
+            if bass: sub(root, tq, BEAT * .45, .16); sub(root, tq + BEAT / 2, BEAT * .4, .11)
         if arp_notes:
             for k in range(16):
-                fc = cutoff[0] + (cutoff[1] - cutoff[0]) * ((b * 16 + k) / (nbar * 16))
-                pluck(arp_notes[(b * 16 + k) % len(arp_notes)], tb + k * BEAT / 4, arp_gain, fc, pan=(-.35, .35)[k % 2], dur=.32)
+                tk = tb + k * BEAT / 4
+                if tk >= t1: break
+                fc = cutoff[0] + (cutoff[1] - cutoff[0]) * ((b_ * 16 + k) / (nbar * 16))
+                pluck(arp_notes[(b_ * 16 + k) % len(arp_notes)], tk, arp_gain, fc, pan=(-.35, .35)[k % 2], dur=.32)
 
-arp3 = ['D5', 'A4', 'F5', 'A4', 'C6', 'A4', 'F5', 'A4']
-bar_section(36.6, 44.0, prog, drums=True, arp_notes=arp3, cutoff=(1200, 3000))
-riser(42.0, 2.0, .08)
-timpani('D2', 44.0, .3); bell('A5', 44.05, .05, 5, ratio=2.0, index=.6)
-bar_section(44.0, 52.6, prog, drums=True, hats=True, arp_notes=arp3, cutoff=(2400, 3600))
-# structure : motif ascendant
-bar_section(52.6, 60.2, [(['D3', 'A3', 'D4', 'F4'], 'D2'), (['G2', 'D3', 'Bb3', 'D4'], 'G1'), (['A2', 'E3', 'A3', 'C#4'], 'A1')], drums=True, hats=True,
-            arp_notes=['D5', 'E5', 'F5', 'A5', 'D6', 'A5', 'F5', 'E5'], cutoff=(2000, 4200))
-for i, nt in enumerate(['D5', 'E5', 'F5', 'G5', 'A5']): bell(nt, 55.2 + i * .25, .035, 3, pan=-.5 + i * .25, ratio=2.0, index=.7)
-# intelligences : trois voix qui s'allument, puis un groove plus riche
-for i, (tm, nt) in enumerate([(60.6, 'A5'), (61.4, 'E6'), (62.2, 'C#6')]): bell(nt, tm, .07, 5, pan=(-.6, .6, 0)[i], ratio=1.5, index=1.2)
-progAI = [(['Bb2', 'F3', 'D4', 'A4'], 'Bb1'), (['F3', 'C4', 'A4'], 'F2'), (['C3', 'G3', 'E4', 'G4'], 'C2'), (['D3', 'A3', 'F4', 'A4'], 'D2')]
-bar_section(62.6, 80.0, progAI, drums=True, hats=True, arp_notes=['F5', 'A5', 'C6', 'A5', 'D6', 'C6', 'A5', 'G5'], arp_gain=.032, cutoff=(2500, 4800), str_gain=.1)
-for tm in [65.0, 69.0, 71.0]: bell('D6', tm, .04, 3, ratio=2.0, index=.5)
-reverse_swell(78.8, 1.5, .08)
+Dm = [(['D3', 'A3', 'F4'], 'D2'), (['Bb2', 'F3', 'D4'], 'Bb1'), (['F3', 'C4', 'A4'], 'F2'), (['C3', 'G3', 'E4'], 'C2')]
+AI = [(['Bb2', 'F3', 'D4', 'A4'], 'Bb1'), (['F3', 'C4', 'A4'], 'F2'), (['C3', 'G3', 'E4', 'G4'], 'C2'), (['D3', 'A3', 'F4', 'A4'], 'D2')]
+WARM = [(['F3', 'C4', 'A4'], 'F2'), (['C3', 'G3', 'E4'], 'C2'), (['D3', 'A3', 'F4'], 'D2'), (['Bb2', 'F3', 'D4'], 'Bb1')]
+BUILD_P = [(['Bb2', 'F3', 'D4', 'F4'], 'Bb1'), (['C3', 'G3', 'E4', 'G4'], 'C2'), (['D3', 'A3', 'F4', 'A4'], 'D2'), (['F3', 'C4', 'A4', 'C5'], 'F2')]
+ARP_A = ['D5', 'A4', 'F5', 'A4', 'C6', 'A4', 'F5', 'A4']
+ARP_B = ['F5', 'A5', 'C6', 'A5', 'D6', 'C6', 'A5', 'G5']
+ARP_C = ['A4', 'C5', 'F5', 'C5', 'G5', 'E5', 'C5', 'E5']
 
-# Privé : la musique se retire ; battements graves, cristal, verrouillage
-choir(['F#4', 'A4', 'C#5'], 80.3, 8.0, .07, attack=1.5)
-drone(['D2'], 80.3, 8.4, .08)
-for k in range(7): kick(80.6 + k * 1.2, .2); kick(80.6 + k * 1.2 + .24, .12)
-for k in range(24): bell(['C#7', 'E7', 'A6', 'F#7'][k % 4], 82.0 + k * .1, .012, 1.5, pan=float(rng.uniform(-.8, .8)), ratio=2.76, index=1.0)
-boom(84.4, .45, 3); bell('A4', 84.4, .1, 5, ratio=1.41, index=3)   # le bouclier se ferme
-bell('E5', 85.8, .06, 4, ratio=1.41, index=2.5)
+# Acte I — le monde éparpillé
+B0 = T['black']
+drone(['D1', 'A1'], 0, B0, .16); wind(0, B0, .05)
+for i, tm in enumerate(np.arange(1.0, B0 - 1.5, 1.6)): bell(['A4', 'F5', 'E5', 'C5', 'D5', 'A4', 'F5', 'G5'][i % 8], float(tm), .05, 5, pan=(-.6, .6)[i % 2], ratio=3.51, index=1.5)
+for tm in rng.uniform(1, B0 - .5, 46): click(float(tm), .03 + rng.random() * .03, float(rng.uniform(-.8, .8)))
+strings(['D4', 'Eb4', 'A4'], B0 - 6.5, 6.4, .07, attack=5, release=.08, bright=1800)
+reverse_swell(B0 - 2.0, 1.9, .05)
+# Acte II — le point, la naissance
+P0, BU = T['point'], T['burst']
+bell('A6', P0, .09, 6, ratio=2.0, index=.8); bell('D6', P0 + .05, .05, 6, ratio=2.0, index=.6)
+choir(['D3', 'A3', 'D4'], P0 + .6, BU - P0 - .6, .10, attack=3.0, release=1)
+reverse_swell(BU - 2.6, 2.6, .14)
+boom(BU, .95, 5)
+strings(['Bb2', 'F3', 'D4', 'F4', 'C5'], BU, 6.2, .16, attack=.6, release=2.5, bright=3200); choir(['Bb3', 'D4', 'F4'], BU + .15, 6.0, .08, attack=1.2)
+for i, (ch, root) in enumerate(Dm * 2):
+    tb = BU + 6.0 + i * 2.0
+    if tb >= T['map'] - .5: break
+    strings(ch, tb, 2.1, .3, attack=.8, release=1.2); sub(root, tb, 2.0, .12)
+k = 0
+while BU + 7.5 + k * BEAT / 4 < T['map'] - .3:
+    pluck(['D5', 'F5', 'A5', 'C6', 'A5', 'F5'][k % 6], BU + 7.5 + k * BEAT / 4, .06 * min(1, k / 20), 3500, pan=(-.4, .4)[k % 2], dur=.35); k += 1
 
-# ACTE IV — la vision : construction, cuivres, timbales, montée
-progV = [(['Bb2', 'F3', 'D4', 'F4'], 'Bb1'), (['C3', 'G3', 'E4', 'G4'], 'C2'), (['D3', 'A3', 'F4', 'A4'], 'D2'), (['F3', 'C4', 'A4', 'C5'], 'F2')]
-bar_section(88.6, 98.2, progV, drums=True, hats=True, arp_notes=['D5', 'F5', 'A5', 'D6', 'F6', 'D6', 'A5', 'F5'], arp_gain=.03, cutoff=(2600, 5000), str_gain=.11)
-for b, (ch, _) in enumerate(progV * 2):
-    if 88.6 + b * 4 * BEAT < 98.0: brass([n.replace('3', '3').replace('4', '4') for n in ch[:3]], 88.6 + b * 4 * BEAT, 1.6, .08)
-bar_section(98.2, 101.0, [(['Bb2', 'F3', 'D4', 'F4', 'Bb4'], 'Bb1'), (['C3', 'G3', 'E4', 'G4', 'C5'], 'C2')], drums=True, hats=True, str_gain=.13)
-for k in range(10): timpani('D2' if k % 2 else 'A1', 97.0 + k * .3 * (1 - k * .03), .18 + k * .01)
-strings(['D4', 'F4', 'A4', 'D5', 'F5'], 101.0, 3.0, .38, attack=2.6, release=.05, bright=3800)
-strings(['D2', 'A2', 'D3'], 101.0, 3.0, .3, attack=2.6, release=.05, bright=2000)
-riser(101.0, 3.0, .55)
-for k in range(28):                                       # roulement de caisse claire qui accélère
-    tm = 101.2 + 2.75 * (1 - (1 - k / 28) ** 1.6)
-    if tm < 103.95: snare(tm, .08 + .22 * k / 28)
-# 103.95 → 104.5 : silence avant l'impact
+# 01 La carte
+bar_section(T['map'], T['sources'], Dm, arp_notes=ARP_A, cutoff=(1200, 3000))
+timpani('D2', T['sources'], .25); bell('A5', T['sources'] + .05, .045, 4, ratio=2.0, index=.6)
+bar_section(T['sources'], T['share'], Dm, hats=True, arp_notes=ARP_A, cutoff=(2400, 3600))
+bar_section(T['share'], T['chat'] - .5, Dm[2:] + Dm[:2], hats=True, arp_notes=ARP_A, cutoff=(2600, 3800))
+reverse_swell(T['chat'] - 1.6, 1.4, .07)
 
-# ACTE V — la révélation
-boom(104.5, 1.0, 6)
-timpani('D2', 104.5, .45)
-strings(['D2', 'A2', 'D3', 'F#3', 'A3', 'D4', 'E4', 'F#4', 'A4'], 104.5, 7.5, .22, attack=.05, release=4.5, bright=4200)
-brass(['D3', 'A3', 'D4', 'F#4'], 104.5, 4.5, .14)
-choir(['D4', 'F#4', 'A4', 'D5'], 104.6, 7.5, .12, attack=.4, release=4)
-bell('D6', 104.55, .08, 7, ratio=2.0, index=1)
-# apaisement : quelques notes de cloche, la lumière reste
-strings(['G2', 'D3', 'B3', 'D4'], 112.0, 3.0, .16, attack=1.5, release=1.5)
-strings(['D3', 'A3', 'F#4', 'A4'], 114.5, 4.6, .18, attack=1.2, release=2)
-for tm, nt in [(108.4, 'F#5'), (109.6, 'A5'), (110.8, 'E5'), (113.8, 'D5'), (114.9, 'A5'), (116.2, 'F#5'), (117.4, 'D6')]: bell(nt, tm, .045, 5, pan=float(rng.uniform(-.4, .4)), ratio=2.0, index=.9)
+# 02 L'intelligence
+chat_b = sentence('L09', 1)
+choir(['D4', 'F4', 'A4'], T['chat'], chat_b - T['chat'] + .5, .06, attack=1.2)
+for i in range(5): bell(['A5', 'E6', 'C#6', 'F#6', 'D6'][i], chat_b + 1.4 + i * .15, .05, 4, pan=(-.6, .6, 0, -.3, .3)[i], ratio=1.5, index=1.2)
+bar_section(chat_b + 1.2, T['ai'], AI, drums=False, arp_notes=ARP_B, arp_gain=.025, cutoff=(1800, 3000), bass=True)
+for i in range(3): bell(['A5', 'E6', 'C#6'][i], S_('L10') + .1 + i * .4, .06, 4, pan=(-.6, .6, 0)[i], ratio=1.5, index=1.2)
+bar_section(T['ai'], T['agents'], AI, hats=True, arp_notes=ARP_B, arp_gain=.032, cutoff=(2500, 4800), str_gain=.1)
+bar_section(T['agents'], T['pc'], [(['D3', 'A3', 'D4', 'F4'], 'D2'), (['G2', 'D3', 'Bb3', 'D4'], 'G1'), (['A2', 'E3', 'A3', 'C#4'], 'A1')], hats=True, arp_notes=['D5', 'E5', 'F5', 'A5', 'D6', 'A5', 'F5', 'E5'], cutoff=(2000, 4200))
+for i in range(6): bell(['D5', 'E5', 'F5', 'G5', 'A5', 'C6'][i], sentence('L12', 1) + 1.0 + i * .15, .03, 3, pan=-.5 + i * .2, ratio=2.0, index=.7)
+bar_section(T['pc'], T['media'], AI[::-1], drums=True, half=True, arp_notes=None, str_gain=.08, kick_gain=.3)
+for i, tm in enumerate([S_('L13') + 2.3, S_('L13') + 2.9]): bell('E5' if i else 'A4', tm, .06, 3, ratio=1.41, index=2.2)
+choir(['F#4', 'A4', 'D5'], T['media'], T['people'] - T['media'], .07, attack=1.5)
+strings(['D3', 'A3', 'F#4'], T['media'], T['people'] - T['media'], .1, attack=1.4, release=1)
+for k_ in range(int((T['people'] - T['media']) / (BEAT / 2))): pluck(['F#5', 'A5', 'D6', 'A5'][k_ % 4], T['media'] + k_ * BEAT / 2, .02, 3000, pan=(-.3, .3)[k_ % 2], dur=.4)
+reverse_swell(T['people'] - 1.6, 1.5, .07)
+
+# 03 Le réseau
+choir(['F3', 'A3', 'C4'], T['people'], 4.0, .06, attack=1.5)
+bar_section(T['people'] + 2.0, T['posts'], WARM, drums=False, arp_notes=ARP_C, arp_gain=.03, cutoff=(1800, 3000))
+bar_section(T['posts'], T['feed'], WARM, hats=True, arp_notes=ARP_C, arp_gain=.034, cutoff=(2600, 4200), str_gain=.1)
+for i, tm in enumerate([S_('L16'), S_('L16') + .55, S_('L16') + 1.05]): bell(['C6', 'E6', 'G6'][i], tm, .045, 2.5, pan=(-.4, 0, .4)[i], ratio=2.0, index=.8)
+bar_section(T['feed'], T['collab'], WARM[1:] + WARM[:1], hats=True, arp_notes=ARP_C, cutoff=(3000, 4400), str_gain=.1)
+for k_ in range(int((T['collab'] - S_('L17')) / 1.25)): bell('F6', S_('L17') + .2 + k_ * 1.25, .02, 1.5, ratio=2.0, index=.5)
+bar_section(T['collab'], T['eco'] - .5, WARM, hats=True, arp_notes=ARP_C, cutoff=(3200, 4800), str_gain=.12)
+reverse_swell(T['eco'] - 1.6, 1.4, .07)
+
+# 04 L'écosystème
+bar_section(T['eco'], T['privacy'], BUILD_P, hats=True, arp_notes=['D5', 'F5', 'A5', 'D6', 'F6', 'D6', 'A5', 'F5'], arp_gain=.03, cutoff=(2600, 5000), str_gain=.11)
+for b_, (ch, _) in enumerate(BUILD_P * 3):
+    tb = T['eco'] + b_ * 4 * BEAT
+    if tb < T['privacy'] - 1.6: brass(ch[:3], tb, 1.6, .07)
+# Privé : retrait, battements, verrouillage
+tLock, tSweep = sentence('L20', 1) + .2, sentence('L20', 2)
+choir(['F#4', 'A4', 'C#5'], T['privacy'], T['converge'] - T['privacy'], .07, attack=1.5); drone(['D2'], T['privacy'], T['converge'] - T['privacy'] + .4, .08)
+k_ = 0
+while T['privacy'] + .3 + k_ * 1.2 < T['converge'] - .3: kick(T['privacy'] + .3 + k_ * 1.2, .2); kick(T['privacy'] + .3 + k_ * 1.2 + .24, .12); k_ += 1
+for k_ in range(24): bell(['C#7', 'E7', 'A6', 'F#7'][k_ % 4], S_('L20') + .8 + k_ * .1, .012, 1.5, pan=float(rng.uniform(-.8, .8)), ratio=2.76, index=1.0)
+boom(tLock, .45, 3); bell('A4', tLock, .1, 5, ratio=1.41, index=3); bell('E5', tSweep, .06, 4, ratio=1.41, index=2.5)
+
+# Convergence : un accent par mot, puis la montée
+I = T['impact']
+for i, (tm, nt) in enumerate([(S_('L21'), 'D2'), (sentence('L21', 1), 'F2'), (sentence('L21', 2), 'A2')]):
+    timpani(nt, tm, .32); strings([['D3', 'A3', 'D4'], ['F3', 'C4', 'F4'], ['A3', 'E4', 'A4']][i], tm, .9 if i < 2 else 1.4, .16, attack=.05, release=.8); bell(['D5', 'F5', 'A5'][i], tm, .05, 3, ratio=2.0, index=.8)
+w4 = sentence('L21', 3)
+strings(['D4', 'F4', 'A4', 'D5', 'F5'], w4, I - .5 - w4, .38, attack=I - w4 - .6, release=.05, bright=3800)
+strings(['D2', 'A2', 'D3'], w4, I - .5 - w4, .3, attack=I - w4 - .6, release=.05, bright=2000)
+riser(w4, I - .5 - w4, .55)
+n_roll = 28
+for k_ in range(n_roll):
+    tm = w4 + .2 + (I - .7 - w4) * (1 - (1 - k_ / n_roll) ** 1.6)
+    snare(tm, .08 + .22 * k_ / n_roll)
+# Révélation
+boom(I, 1.0, 6); timpani('D2', I, .45)
+strings(['D2', 'A2', 'D3', 'F#3', 'A3', 'D4', 'E4', 'F#4', 'A4'], I, 7.5, .22, attack=.05, release=4.5, bright=4200)
+brass(['D3', 'A3', 'D4', 'F#4'], I, 4.5, .14); choir(['D4', 'F#4', 'A4', 'D5'], I + .1, 7.5, .12, attack=.4, release=4); bell('D6', I + .05, .08, 7, ratio=2.0, index=1)
+strings(['G2', 'D3', 'B3', 'D4'], S_('L23') - 1.0, 3.0, .16, attack=1.5, release=1.5)
+strings(['D3', 'A3', 'F#4', 'A4'], S_('L24') - 1.0, DUR - S_('L24') + .5, .18, attack=1.2, release=2)
+for tm, nt in [(S_('L22') + .9, 'F#5'), (S_('L22') + 2.1, 'A5'), (S_('L23'), 'E5'), (S_('L23') + 1.4, 'D5'), (S_('L24'), 'A5'), (S_('L24') + 1.2, 'F#5'), (DUR - 1.8, 'D6')]: bell(nt, tm, .045, 5, pan=float(rng.uniform(-.4, .4)), ratio=2.0, index=.9)
 
 # ------------------------------------------------------------------ réverbération et mixage
 def impulse(seconds=3.6, seed=0):
@@ -266,7 +304,7 @@ mix = np.vstack([L + wetL * .9, R + wetR * .9])
 mix = hp(mix, 28)
 # fenêtres de silence voulues (le noir avant le point, la respiration avant l'impact)
 gate = np.ones(N)
-for a, b in [(15.62, 16.5), (103.98, 104.48)]:
+for a, b in [(T['black'] - .15, T['point'] - .05), (I - .5, I - .02)]:
     i, j = int(a * SR), int(b * SR); gate[i:j] = 0; gate[i - 2400:i] *= np.linspace(1, 0, 2400); gate[j:j + 240] *= np.linspace(0, 1, 240)
 mix *= gate
 
@@ -278,7 +316,7 @@ venv = np.sqrt(np.convolve(voice ** 2, np.ones(2400) / 2400, mode='same'))
 active = (venv > .01).astype(float)
 duck = np.convolve(active, np.ones(int(.25 * SR)) / int(.25 * SR), mode='same')
 duck = 1 - .5 * np.clip(duck * 1.4, 0, 1)
-seg = mix[:, int(104.5 * SR):int(110 * SR)].mean(0)
+seg = mix[:, int(I * SR):int((I + 5.5) * SR)].mean(0)
 music_peak = np.sqrt(np.mean(seg ** 2))
 mix = mix * (10 ** (-13 / 20) / music_peak)   # l'impact final sert de référence : c'est le sommet du film
 mix = np.tanh(mix * 1.2) / 1.2                 # limiteur doux de la musique seule

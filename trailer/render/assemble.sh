@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
-# Assemble les segments rendus (à l'image près) et le mixage audio en un seul film.
-# a : 0-1199 · p : 480-899 (point d’origine refait) · b : 1200-2399 · c : 2400-3134 · d : 3135-3404 (révélation) · e : 3405-3599 (carton de sortie)
+# Assemble les trois segments rendus et le mixage audio en un seul film.
 set -euo pipefail
 cd "$(dirname "$0")/../build/seg"
 OUT=../../ORBE-bande-annonce.mp4
-ffmpeg -y -loglevel error -i a.mp4 -i p.mp4 -i b.mp4 -i c.mp4 -i d.mp4 -i e.mp4 -i ../mix.wav -filter_complex "
- [0:v]trim=start_frame=0:end_frame=480,setpts=PTS-STARTPTS[v0];
- [1:v]trim=start_frame=0:end_frame=420,setpts=PTS-STARTPTS[v1];
- [0:v]trim=start_frame=900:end_frame=1200,setpts=PTS-STARTPTS[v2];
- [2:v]trim=start_frame=0:end_frame=1200,setpts=PTS-STARTPTS[v3];
- [3:v]trim=start_frame=0:end_frame=735,setpts=PTS-STARTPTS[v4];
- [4:v]trim=start_frame=0:end_frame=270,setpts=PTS-STARTPTS[v5];
- [5:v]trim=start_frame=0:end_frame=195,setpts=PTS-STARTPTS[v6];
- [v0][v1][v2][v3][v4][v5][v6]concat=n=7:v=1:a=0,format=yuv420p[v]" \
- -map "[v]" -map 6:a -c:v libx264 -preset slow -crf 18 -tune film -r 30 -c:a aac -b:a 256k -ar 48000 -movflags +faststart -t 120 "$OUT"
+DUR=$(python3 -c "import json; print(json.load(open('../narration.json'))['duration'])")
+printf "file 'a.mp4'\nfile 'b.mp4'\nfile 'c.mp4'\n" > list.txt
+ffmpeg -y -loglevel error -f concat -safe 0 -i list.txt -i ../mix.wav -map 0:v -map 1:a -c:v libx264 -preset slow -crf 18 -tune film -r 30 -pix_fmt yuv420p \
+  -c:a aac -b:a 256k -ar 48000 -movflags +faststart -t "$DUR" "$OUT"
+ffmpeg -y -loglevel error -i "$OUT" -c:v libx264 -preset slow -crf 24 -tune film -c:a copy -movflags +faststart ../../ORBE-bande-annonce-web.mp4
 ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,nb_frames -of compact "$OUT"
