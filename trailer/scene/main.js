@@ -257,14 +257,14 @@ const NET = { nodes: [] };
 {
   const scene = new THREE.Scene();
   scene.add(makeStars(8000, 1400, 21, 1.4, .7));
-  const point = glow(GOLD_HI, 1, 1), halo = glow(GOLD, 1, .5);
+  const point = glow(new THREE.Color('#EAF6FF'), 1, 1), halo = glow(new THREE.Color('#6FC2FF'), 1, .5);
   const pub = glow(SKY, 1, 0), priv = glow(ROSE, 1, 0);
   const core = new THREE.Group(); core.add(halo, point, pub, priv); scene.add(core);
   // Rayons d'étincelle au moment de l'apparition
   const flare = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({
     uniforms: { uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
-    fragmentShader: 'uniform float uA; varying vec2 vUv; void main(){ vec2 p = vUv - .5; float h = exp(-abs(p.y) * 260.) * smoothstep(.5, 0., abs(p.x)); float v = exp(-abs(p.x) * 420.) * smoothstep(.5, 0., abs(p.y)) * .5; gl_FragColor = vec4(vec3(1., .85, .55) * (h + v) * uA, 1.); }' }));
+    fragmentShader: 'uniform float uA; varying vec2 vUv; void main(){ vec2 p = vUv - .5; float h = exp(-abs(p.y) * 260.) * smoothstep(.5, 0., abs(p.x)); float v = exp(-abs(p.x) * 420.) * smoothstep(.5, 0., abs(p.y)) * .5; gl_FragColor = vec4(vec3(.75, .9, 1.) * (h + v) * uA, 1.); }' }));
   scene.add(flare);
   // Amas de connaissances publiques : les grandes familles du savoir
   const DOMAINS = ['Univers', 'Matière et énergie', 'Formes et calcul', 'Terre', 'Vivant', 'Humain et société', 'Économie', 'Technique', 'Arts et loisirs'];
@@ -615,52 +615,60 @@ let ENV = null; // enveloppe de la voix (une valeur par image) pour animer l'ann
 }
 
 // ===================================================================================
-// ACTE V — La révélation : l'emblème d'ORBE.
+// ACTE V — La révélation : l'emblème d'ORBE (sphère de points lumineux, deux orbites, lettres fines).
 // ===================================================================================
 {
-  const scene = new THREE.Scene(); scene.add(makeStars(9000, 1600, 101, 1.3, .65));
+  const scene = new THREE.Scene(); scene.add(makeStars(9000, 1600, 101, 1.2, .55));
   const logo = new THREE.Group(); scene.add(logo);
-  const sphere = new THREE.Mesh(new THREE.SphereGeometry(5, 128, 96), new THREE.ShaderMaterial({ uniforms: { uT: { value: 0 }, uL: { value: v3(-.55, .6, .58).normalize() } },
-    vertexShader: 'varying vec3 vN; varying vec3 vV; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
-    fragmentShader: `uniform vec3 uL; uniform float uT; varying vec3 vN; varying vec3 vV;
-      void main(){ float d = max(dot(vN, uL), 0.); float f = pow(1. - max(dot(vN, vV), 0.), 3.);
-        vec3 c = mix(vec3(.55, .25, .07), vec3(.95, .76, .31), smoothstep(-.2, .7, d)); c = mix(c, vec3(1., .93, .67), smoothstep(.75, 1., d));
-        c += vec3(1., .75, .4) * f * .9; c += vec3(1., .95, .8) * pow(max(dot(reflect(-uL, vN), vV), 0.), 30.) * .5; gl_FragColor = vec4(c * .62, 1.); }` }));
-  const orbit = new THREE.Mesh(new THREE.TorusGeometry(8.6, .07, 12, 256), new THREE.MeshBasicMaterial({ color: SKY, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: true }));
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(.5, 48, 32), new THREE.MeshBasicMaterial({ color: WHITE, transparent: true, opacity: 0 }));
-  const orbitG = new THREE.Group(); orbitG.rotation.z = -28 * Math.PI / 180; orbitG.rotation.x = 1.25; orbitG.add(orbit, moon);
-  const halo = glow(GOLD, 16, 0), halo2 = glow(SKY, 40, 0);
-  logo.add(halo2, halo, sphere, orbitG);
-  // Rayons de lumière (volumétriques simulés) derrière l'emblème
-  const rays = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.ShaderMaterial({ uniforms: { uT: { value: 0 }, uA: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
-    fragmentShader: `uniform float uT, uA; varying vec2 vUv; float h(float x){ return fract(sin(x * 91.7) * 4375.5); }
-      void main(){ vec2 p = vUv - .5; float r = length(p); float a = atan(p.y, p.x); float s = 0.;
-        for (int i = 0; i < 3; i++){ float k = float(i) * 13. + 17.; float an = a * k + uT * (.05 + float(i) * .03); s += pow(abs(sin(an)), 18.) * (.5 + .5 * h(floor(an / 3.14159))); }
-        float fall = smoothstep(.5, .06, r) * smoothstep(0., .08, r); gl_FragColor = vec4(vec3(1., .82, .5) * s * fall * uA * .045, 1.); }` }));
-  rays.position.z = -6; logo.add(rays);
-  // Poussière lumineuse qui retombe
-  const r = rng(3), D = 4000, dp = new Float32Array(D * 3), dc = new Float32Array(D * 3), ds = new Float32Array(D), de = new Float32Array(D);
-  for (let i = 0; i < D; i++) { dp.set([(r() - .5) * 120, (r() - .5) * 70, (r() - .5) * 60 - 10], i * 3); const c = GOLD_HI.clone().lerp(WHITE, r()).multiplyScalar(.3 + r() * .5); dc.set([c.r, c.g, c.b], i * 3); ds[i] = .5 + r() * 1.5; de[i] = r(); }
+  // Sphère de points répartis régulièrement (spirale de Fibonacci), plus lumineuse sur le pourtour
+  const NS = 5200, R = 5, r = rng(3);
+  const sp = new Float32Array(NS * 3), from = new Float32Array(NS * 3), sd = new Float32Array(NS);
+  const golden = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < NS; i++) {
+    const y = 1 - (i / (NS - 1)) * 2, rad = Math.sqrt(1 - y * y), th = golden * i;
+    sp.set([Math.cos(th) * rad * R, y * R, Math.sin(th) * rad * R], i * 3);
+    const u = r() * 2 - 1, a2 = r() * 6.283, d = 30 + r() * 60;
+    from.set([Math.sqrt(1 - u * u) * Math.cos(a2) * d, u * d, Math.sin(a2) * Math.sqrt(1 - u * u) * d], i * 3); sd[i] = r();
+  }
+  const smat = new THREE.ShaderMaterial({
+    uniforms: { uK: { value: 0 }, uT: { value: 0 }, uScale: { value: H * .55 }, uA: { value: 1 } },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `attribute vec3 aFrom; attribute float aSeed; uniform float uK, uT, uScale; varying float vA; varying float vRim;
+      void main(){ float k = smoothstep(aSeed * .5, aSeed * .5 + .5, uK); k = 1. - pow(1. - k, 3.);
+        vec3 p = mix(aFrom, position, k); vec4 mv = modelViewMatrix * vec4(p, 1.); gl_Position = projectionMatrix * mv;
+        vec3 n = normalize(normalMatrix * position); float facing = dot(n, normalize(-mv.xyz));
+        vRim = pow(1. - abs(facing), 2.6); vA = (facing > 0. ? 1. : .28) * (.55 + .45 * sin(uT * 2. + aSeed * 40.)) * smoothstep(0., .2, k);
+        gl_PointSize = (1.0 + vRim * .5) * .21 * uScale / -mv.z; }`,
+    fragmentShader: `uniform float uA; varying float vA; varying float vRim; void main(){ float d = length(gl_PointCoord - .5); float a = smoothstep(.5, .05, d);
+      vec3 c = mix(vec3(.32, .7, 1.), vec3(.82, .95, 1.), vRim); gl_FragColor = vec4(c * a * vA * uA * (1.05 + vRim * .7), 1.); }` });
+  const sphere = new THREE.Points(geo({ position: [sp, 3], aFrom: [from, 3], aSeed: [sd, 1] }), smat); sphere.frustumCulled = false;
+  const coreGlow = glow(new THREE.Color('#3E8BD6'), 14, 0), coreWarm = glow(new THREE.Color('#9A6BB8'), 5, 0), outer = glow(new THREE.Color('#2B5C9E'), 34, 0);
+  logo.add(outer, coreGlow, coreWarm, sphere);
+  // Deux orbites fines qui se croisent, chacune portant un petit point lumineux
+  const orbits = [[9.4, 1.18, .16], [10.4, 1.27, -.13]].map(([rad, rx, rz]) => {
+    const pts = []; for (let k = 0; k <= 256; k++) { const a = k / 256 * 6.283; pts.push(v3(Math.cos(a) * rad, Math.sin(a) * rad, 0)); }
+    const g = new THREE.Group(); g.rotation.set(rx, 0, rz);
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMaterial(new THREE.Color('#BFD9F2'), 0));
+    const dot = glow(new THREE.Color('#DDEEFF'), .6, 0); g.add(line, dot); logo.add(g); return { line, dot, rad };
+  });
+  // Poussière lumineuse
+  const D = 3000, dp = new Float32Array(D * 3), dc = new Float32Array(D * 3), ds = new Float32Array(D), de = new Float32Array(D);
+  for (let i = 0; i < D; i++) { dp.set([(r() - .5) * 120, (r() - .5) * 70, (r() - .5) * 60 - 10], i * 3); const c = SKY.clone().lerp(WHITE, r()).multiplyScalar(.25 + r() * .4); dc.set([c.r, c.g, c.b], i * 3); ds[i] = .5 + r() * 1.3; de[i] = r(); }
   const dmat = pointsMaterial(); const dust = new THREE.Points(geo({ position: [dp, 3], aColor: [dc, 3], aSize: [ds, 1], aSeed: [de, 1] }), dmat); scene.add(dust);
-  const cam = cameraPath([[104.5, v3(0, 0, 9.5), v3(0, 0, 0), 50], [107.5, v3(0, .8, 30), v3(0, 1.6, 0), 42], [113.2, v3(0, 1.2, 36), v3(0, 3.0, 0), 40], [120, v3(0, 1.4, 40), v3(0, 3.4, 0), 40]]);
+  const cam = cameraPath([[104.5, v3(0, 0, 12), v3(0, 0, 0), 52], [108.0, v3(0, .4, 23), v3(0, 0, 0), 40], [120, v3(0, .5, 25.5), v3(0, 0, 0), 40]]);
   SC.reveal = { scene, update(t) {
-    const on = smooth(104.5, 105.6, t);
-    sphere.material.uniforms.uT.value = t; sphere.rotation.y = t * .1;
-    orbit.material.opacity = on * .95; moon.material.opacity = on;
-    const ma = t * .55 + 1.2; moon.position.set(Math.cos(ma) * 8.6, Math.sin(ma) * 8.6, 0);
-    orbitG.rotation.x = 1.25 + Math.sin(t * .2) * .04;
-    halo.material.opacity = .2 * on; halo.scale.setScalar(15 + 1.2 * Math.sin(t * 1.6)); halo2.material.opacity = .05 * on;
-    rays.material.uniforms.uT.value = t; rays.material.uniforms.uA.value = on * (1 + 1.2 * Math.exp(-Math.max(0, t - 104.6) * 1.2));
-    rays.lookAt(camera.position);
-    dmat.uniforms.uTime.value = t; dust.position.y = -(t - 104.5) * .6;
-    logo.position.y = 3.2 * smooth(105.5, 107.5, t);
-    cam(t); bloom.strength = .8 + 1.4 * Math.exp(-Math.max(0, t - 104.5) * 1.6); bloom.radius = .5; bloom.threshold = .5;
+    const k = smooth(104.5, 107.2, t); smat.uniforms.uK.value = k; smat.uniforms.uT.value = t;
+    sphere.rotation.y = t * .12; sphere.rotation.x = .18;
+    const on = smooth(105.4, 107.0, t);
+    coreGlow.material.opacity = .32 * on; coreWarm.material.opacity = .12 * on; outer.material.opacity = .08 * on;
+    orbits.forEach((o, i) => { o.line.material.opacity = .32 * smooth(106.0 + i * .3, 107.4 + i * .3, t); const a = t * (.35 + i * .12) + i * 2.4; o.dot.position.set(Math.cos(a) * o.rad, Math.sin(a) * o.rad, 0); o.dot.material.opacity = smooth(106.4, 107.4, t); });
+    dmat.uniforms.uTime.value = t; dust.position.y = -(t - 104.5) * .5;
+    cam(t); bloom.strength = .75 + 1.4 * Math.exp(-Math.max(0, t - 104.5) * 1.6); bloom.radius = .55; bloom.threshold = .3;
   } };
-  text('wordmark', 'ORBE', 106.2, 120, { y: 760, fi: 1.6, fo: 1.2, drift: 0, track: .62 });
+  text('logo-word', 'ORBE', 106.4, 120, { y: 540, fi: 1.8, fo: 1.2, drift: 0, track: .8 });
   text('tagline', 'Tout ce que tu sais, en un seul point.', 108.4, 113.2, { y: 905, fi: .9, fo: .7, drift: 10 });
   text('eyebrow', 'Bientôt disponible', 113.8, 120, { y: 892, fi: .9, fo: 1.2, drift: 8 });
-  text('cta', 'Découvre ORBE', 114.9, 120, { y: 950, fi: .9, fo: 1.2, drift: 8 });
+  text('cta', 'Découvre ORBE', 114.9, 120, { y: 948, fi: .9, fo: 1.2, drift: 8 });
 }
 
 // ---------- montage : quelle scène à quel instant, transitions ----------
