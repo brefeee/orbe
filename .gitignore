@@ -19,3 +19,4 @@ server/data/
 *.log
 desktop/src-tauri/target/
 desktop/src-tauri/gen/
+client/dist-*/
