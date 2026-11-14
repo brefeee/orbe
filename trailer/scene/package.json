@@ -1,0 +1,2 @@
+{ "name": "orbe-trailer-scene", "private": true, "type": "module",
+  "dependencies": { "three": "0.160.0", "@fontsource-variable/inter": "5.1.0" } }

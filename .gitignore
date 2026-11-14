@@ -20,3 +20,5 @@ server/data/
 desktop/src-tauri/target/
 desktop/src-tauri/gen/
 client/dist-*/
+trailer/build/
+trailer/scene/node_modules/
