@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>ORBE — Les 18 abonnements</title>
+<title>ORBE — Normal et les 18 abonnements</title>
 <style>
   html, body { margin: 0; background: #000; overflow: hidden; }
   #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #03040c;
@@ -59,11 +59,11 @@
   /* Frise de progression */
   #rail { left: 140px; top: 918px; width: 1640px; height: 120px; display: flex; opacity: 0; }
   .slot { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
-  .bar { width: 44px; border-radius: 5px 5px 2px 2px; position: relative; overflow: hidden;
+  .bar { width: 40px; border-radius: 5px 5px 2px 2px; position: relative; overflow: hidden;
          box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
   .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0;
           background: linear-gradient(180deg, hsl(var(--h) 100% 82%), hsl(var(--h) 90% 56%)); }
-  .nm { margin-top: 10px; font-size: 14px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  .nm { margin-top: 10px; font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
         color: rgba(255,255,255,.38); white-space: nowrap; }
 
   /* Intro / conclusion */
@@ -111,7 +111,7 @@
     <img id="i-logo" src="logo-orbe.png" alt="" style="top:250px;width:260px;height:260px">
     <div id="i-word" class="wordmark" style="top:560px;font-size:92px">ORBE</div>
     <div id="i-big" class="big disp" style="top:330px">18 abonnements</div>
-    <div id="i-sub" class="sub" style="top:520px">De Kilo à Celestia</div>
+    <div id="i-sub" class="sub" style="top:520px">Version Normal gratuite · De Kilo à Celestia</div>
     <div id="i-line" class="line" style="top:640px">Mensuel ou annuel <span class="badge" style="margin:0">−50&nbsp;%</span> sur l’annuel</div>
     <div id="i-note" class="line" style="top:718px;font-size:28px"><span><b>6 mensualités payées</b> · 12 mois d’accès</span></div>
   </div>
@@ -119,7 +119,7 @@
   <div id="outro" class="abs center">
     <img id="o-logo" src="logo-orbe.png" alt="" style="top:190px;width:300px;height:300px">
     <div id="o-word" class="wordmark" style="top:540px;font-size:104px">ORBE</div>
-    <div id="o-l1" class="sub" style="top:712px">18 abonnements · De Kilo à Celestia</div>
+    <div id="o-l1" class="sub" style="top:712px">Normal gratuit · 18 abonnements de Kilo à Celestia</div>
     <div id="o-l2" class="line" style="top:800px">Mensuel ou annuel <span class="badge" style="margin:0">−50&nbsp;%</span> sur l’annuel</div>
   </div>
 
@@ -130,6 +130,7 @@
 'use strict';
 /* ---------- Données officielles (ne pas modifier) ---------- */
 const TIERS = [
+  ['Normal',   'Gratuit',     'Gratuit',      '1 million',        1e6],   // version gratuite
   ['Kilo',     '5 €',         '30 €',         '4,9 millions',     4.9e6],
   ['Méga',     '10 €',        '60 €',         '12 millions',      12e6],
   ['Giga',     '25 €',        '150 €',        '36 millions',      36e6],
@@ -183,8 +184,16 @@ for (let i = 0; i < N - 1; i++) {
   const [name, m, a, q] = TIERS[i];
   const el = document.createElement('div');
   el.className = 'tier abs'; el.style.setProperty('--h', hueOf(i).toFixed(1));
-  el.innerHTML = `
-    <div class="kicker abs" style="position:relative">ABONNEMENT <b>${String(i + 1).padStart(2, '0')}</b> / 18</div>
+  el.innerHTML = i === 0 ? `
+    <div class="kicker abs" style="position:relative">VERSION <b>GRATUITE</b></div>
+    <div class="name disp abs" style="position:relative">${name}</div>
+    <div class="rows">
+      <div class="row abs" style="position:relative"><div class="lab">Prix</div>
+        <div class="val"><span class="num">Gratuit</span></div></div>
+      <div class="row abs" style="position:relative"><div class="lab">Quota</div>
+        <div class="val"><span class="num">${nb(q)}</span><span class="unit">de tokens / mois</span></div></div>
+    </div>` : `
+    <div class="kicker abs" style="position:relative">ABONNEMENT <b>${String(i).padStart(2, '0')}</b> / 18</div>
     <div class="name disp abs" style="position:relative">${name}</div>
     <div class="rows">
       <div class="row abs" style="position:relative"><div class="lab">Mensuel</div>
@@ -441,14 +450,14 @@ function renderAt(t) {
   let flash = 0, flashCol = '255,255,255';
   if (sc.k === 'tier') {
     const i = sc.i, u = sc.u;
-    const R = 104 + 122 * Math.pow(i / 16, 0.9);
+    const R = 104 + 122 * Math.pow(i / (N - 2), 0.9);
     const enter = eoe(u / 0.85), exit = eic((u - (D - 0.36)) / 0.36);
     const s = (0.04 + 0.96 * enter) * (1 + 0.05 * u / D) * (1 + 3.2 * exit);
     const a = cl(u / 0.25) * (1 - exit);
     const cy = fy + Math.sin(t * 0.7) * 6;
-    shock(fx, cy, R, (u - 0.05) / 1.0, hue, 0.8 + 0.4 * i / 16);
+    shock(fx, cy, R, (u - 0.05) / 1.0, hue, 0.8 + 0.4 * i / (N - 2));
     drawOrb(fx, cy, R * s, i, t, a, hue);
-    flash = Math.max((0.1 + 0.12 * i / 16) * (1 - cl(u / 0.3)), (0.1 + 0.12 * i / 16) * cl((u - (D - 0.14)) / 0.14));
+    flash = Math.max((0.1 + 0.12 * i / (N - 2)) * (1 - cl(u / 0.3)), (0.1 + 0.12 * i / (N - 2)) * cl((u - (D - 0.14)) / 0.14));
     flashCol = null;
   } else if (sc.k === 'intro') {
     flash = 0.18 * cl((sc.u - (T_INTRO - 0.14)) / 0.14); flashCol = null;
@@ -538,8 +547,8 @@ function renderAt(t) {
     P.el.style.opacity = (1 - ex).toFixed(4); P.el.style.transform = `translate3d(${(-60 * ex).toFixed(2)}px,0,0)`;
     show(P.kicker, u, 0.12, 0.45, 20);
     show(P.name, u, 0.18, 0.6, 46); P.name.style.letterSpacing = (lerp(0.06, -0.02, eoc((u - 0.18) / 0.8))).toFixed(4) + 'em';
-    show(P.rows[0], u, 0.38); show(P.rows[1], u, 0.5); show(P.rows[2], u, 0.62);
-    pop(P.badge, u, 0.82);
+    P.rows.forEach((r, k) => show(r, u, 0.38 + 0.12 * k));
+    if (P.badge) pop(P.badge, u, 0.82);
   }
 
   // Celestia

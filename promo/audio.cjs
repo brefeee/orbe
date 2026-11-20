@@ -1,7 +1,7 @@
 // Bande-son synthétisée (aucun échantillon externe) : node audio.cjs sortie.wav
 const fs = require('fs');
 const SR = 48000;
-const N = 18, T_INTRO = 6, D = 3.8, T_CEL = 10, T_OUT = 7.6, IMPACT = 1.3;
+const N = 19, T_INTRO = 6, D = 3.8, T_CEL = 10, T_OUT = 7.6, IMPACT = 1.3;
 const CEL0 = T_INTRO + (N - 1) * D, OUT0 = CEL0 + T_CEL, TOTAL = OUT0 + T_OUT;
 const LEN = Math.ceil(TOTAL * SR);
 const L = new Float32Array(LEN), R = new Float32Array(LEN), SEND = new Float32Array(LEN);
@@ -51,9 +51,9 @@ for (let i = 0; i < LEN; i++) { const t = i / SR;
 bell(0.45, semi(12), 0.09, 2.2, -0.2, 0.8); bell(0.45, semi(19), 0.06, 2.2, 0.2, 0.8);
 bell(3.15, semi(12), 0.07, 1.8, 0.2, 0.8); bell(3.15, semi(24), 0.05, 1.8, -0.2, 0.8);
 
-// 17 paliers : une gamme qui monte, des impacts qui grossissent
-const STEPS = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27, 29, 31, 34, 36, 39];
-for (let i = 0; i < N - 1; i++) { const t0 = T_INTRO + i * D, k = i / 16;
+// Normal + 17 paliers : une gamme qui monte, des impacts qui grossissent
+const STEPS = [-5, 0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27, 29, 31, 34, 36, 39];
+for (let i = 0; i < N - 1; i++) { const t0 = T_INTRO + i * D, k = i / (N - 2);
   whoosh(t0, 0.5, 0.45, 0.07 + 0.09 * k);
   thump(t0 + 0.02, 95 + 25 * k, 46 - 8 * k, 0.2 + 0.22 * k, 0.28 + 0.2 * k);
   bell(t0 + 0.06, semi(STEPS[i]), 0.11, 1.5, i % 2 ? 0.35 : -0.35, 0.7);
