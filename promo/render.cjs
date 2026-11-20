@@ -21,7 +21,7 @@ const url = 'file://' + path.join(__dirname, 'video.html') + '?capture';
     const a = w * per, b = Math.min(frames, a + per); if (a >= b) return;
     const seg = path.join(tmp, `seg${w}.mp4`); segs[w] = seg;
     const ff = spawn('ffmpeg', ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
-      '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-color_range', 'tv', '-g', String(FPS * 2), seg], { stdio: ['pipe', 'inherit', 'inherit'] });
+      '-c:v', 'libx264', '-preset', 'slow', '-crf', '25', '-pix_fmt', 'yuv420p', '-color_range', 'tv', '-g', String(FPS * 2), seg], { stdio: ['pipe', 'inherit', 'inherit'] });
     const closed = new Promise((res, rej) => ff.on('close', c => c ? rej(new Error('ffmpeg ' + c)) : res()));
     const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
     await page.goto(url); await page.evaluate(() => window.ready);

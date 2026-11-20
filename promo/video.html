@@ -82,7 +82,7 @@
 <div id="stage">
   <canvas id="c" width="1920" height="1080"></canvas>
 
-  <div id="brand" class="abs"><img src="../app/public/logo.svg" alt=""><span>ORBE</span></div>
+  <div id="brand" class="abs"><img src="logo-orbe.png" alt=""><span>ORBE</span></div>
   <div id="tiers"></div>
 
   <div id="cel" class="abs">
@@ -108,7 +108,7 @@
   <div id="rail" class="abs"></div>
 
   <div id="intro" class="abs center">
-    <img id="i-logo" src="../app/public/logo.svg" alt="" style="top:250px;width:260px;height:260px">
+    <img id="i-logo" src="logo-orbe.png" alt="" style="top:250px;width:260px;height:260px">
     <div id="i-word" class="wordmark" style="top:560px;font-size:92px">ORBE</div>
     <div id="i-big" class="big disp" style="top:330px">18 abonnements</div>
     <div id="i-sub" class="sub" style="top:520px">De Kilo à Celestia</div>
@@ -117,7 +117,7 @@
   </div>
 
   <div id="outro" class="abs center">
-    <img id="o-logo" src="../app/public/logo.svg" alt="" style="top:190px;width:300px;height:300px">
+    <img id="o-logo" src="logo-orbe.png" alt="" style="top:190px;width:300px;height:300px">
     <div id="o-word" class="wordmark" style="top:540px;font-size:104px">ORBE</div>
     <div id="o-l1" class="sub" style="top:712px">18 abonnements · De Kilo à Celestia</div>
     <div id="o-l2" class="line" style="top:800px">Mensuel ou annuel <span class="badge" style="margin:0">−50&nbsp;%</span> sur l’annuel</div>
@@ -170,7 +170,8 @@ const eic = p => Math.pow(cl(p), 3);
 const eob = p => { p = cl(p); const c = 1.9; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
 function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
   t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const hueOf = i => (195 + i * 210 / (N - 1)) % 360;   // cyan ORBE → or ORBE
+const H0 = 213, HSPAN = 192;                          // bleu ORBE → or
+const hueOf = i => (H0 + i * HSPAN / (N - 1)) % 360;
 const LOG0 = Math.log10(TIERS[0][4]), LOG1 = Math.log10(TIERS[N - 1][4]);
 const quota01 = i => (Math.log10(TIERS[i][4]) - LOG0) / (LOG1 - LOG0);
 
@@ -254,9 +255,9 @@ function scene(t) {
   return { k: 'outro', i: N - 1, u: t - OUT0 };
 }
 function hueAt(t) {                                    // teinte continue (non bouclée)
-  if (t < T_INTRO) return 195;
+  if (t < T_INTRO) return H0;
   const f = Math.min(N - 1, (t - T_INTRO) / D), i = Math.floor(f), u = (f - i) * D;
-  const h = 195 + i * 210 / (N - 1), prev = 195 + Math.max(0, i - 1) * 210 / (N - 1);
+  const h = H0 + i * HSPAN / (N - 1), prev = H0 + Math.max(0, i - 1) * HSPAN / (N - 1);
   return lerp(prev, h, smooth(u / 0.45));
 }
 function levelAt(t) { return cl((t - T_INTRO) / (CEL0 + IMPACT - T_INTRO)); }
@@ -406,7 +407,7 @@ function renderAt(t) {
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
   let g = ctx.createRadialGradient(fx, fy, 0, fx, fy, 1500);
   const bgL = 13 + 7 * L;
-  g.addColorStop(0, `hsl(${lerp(hue, 228, outK) % 360},${lerp(58, 48, outK)}%,${lerp(bgL, 19, outK)}%)`);
+  g.addColorStop(0, `hsl(${lerp(hue, 216, outK) % 360},${lerp(58, 48, outK)}%,${lerp(bgL, 19, outK)}%)`);
   g.addColorStop(0.55, '#070a1c'); g.addColorStop(1, '#02030a');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 
@@ -475,7 +476,7 @@ function renderAt(t) {
       const a = smooth((u - 0.9) / 1.2);
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       g = ctx.createRadialGradient(960, 340, 0, 960, 340, 620);
-      g.addColorStop(0, `rgba(127,209,255,${0.2 * a})`); g.addColorStop(0.4, `rgba(242,193,78,${0.07 * a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      g.addColorStop(0, `rgba(2,117,253,${0.3 * a})`); g.addColorStop(0.4, `rgba(2,117,253,${0.08 * a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
     }
   }
