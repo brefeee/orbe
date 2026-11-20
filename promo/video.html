@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>ORBE — Les 18 abonnements</title>
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #03040c;
+           font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: #fff;
+           -webkit-font-smoothing: antialiased; transform-origin: 0 0; }
+  canvas { position: absolute; left: 0; top: 0; }
+  .abs { position: absolute; will-change: opacity, transform; }
+  .disp { font-family: 'Inter Display', 'Inter', sans-serif; }
+
+  /* Bandeau de marque */
+  #brand { left: 140px; top: 62px; display: flex; align-items: center; gap: 18px; opacity: 0; }
+  #brand img { width: 52px; height: 52px; display: block; }
+  #brand span { font-weight: 700; font-size: 26px; letter-spacing: .34em; }
+
+  /* Séquences d'abonnement */
+  .tier { left: 140px; top: 168px; width: 900px; display: none; }
+  .kicker { font-size: 22px; font-weight: 600; letter-spacing: .3em; color: hsl(var(--h) 95% 76%); }
+  .kicker b { color: #fff; font-weight: 700; }
+  .name { font-weight: 800; font-size: 156px; line-height: 1; margin: 14px 0 0 -6px; letter-spacing: -.02em;
+          text-shadow: 0 0 60px hsl(var(--h) 95% 60% / .45); white-space: nowrap; }
+  .rows { margin-top: 44px; }
+  .row { display: grid; grid-template-columns: 200px 1fr; align-items: baseline;
+         padding: 22px 0 20px; border-top: 1px solid rgba(255,255,255,.16); }
+  .lab { font-size: 22px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase;
+         color: hsl(var(--h) 95% 76%); }
+  .val { display: flex; align-items: baseline; gap: 18px; white-space: nowrap; }
+  .num { font-family: 'Inter Display', 'Inter', sans-serif; font-weight: 700; font-size: 76px; line-height: 1;
+         letter-spacing: -.01em; }
+  .sp { display: inline-block; width: .21em; }
+  .unit { font-size: 30px; font-weight: 500; color: rgba(255,255,255,.82); }
+  .badge { align-self: center; margin-left: 14px; padding: 9px 20px 10px; border-radius: 999px;
+           background: linear-gradient(180deg, #FFECAA, #F2C14E); color: #151003;
+           font-weight: 800; font-size: 32px; line-height: 1; letter-spacing: .01em;
+           box-shadow: 0 0 34px rgba(242,193,78,.6); display: inline-block; }
+  .note { grid-column: 2; margin-top: 12px; font-size: 24px; font-weight: 500; color: rgba(255,255,255,.86); }
+  .note b { color: #FFE08A; font-weight: 700; }
+
+  /* Celestia */
+  #cel { left: 0; top: 0; width: 1920px; height: 1080px; display: none; text-align: center; --h: 45; }
+  #cel .kicker { position: absolute; left: 0; right: 0; top: 462px; color: #FFE08A; }
+  #cel .name { position: absolute; left: 0; right: 0; top: 496px; margin: 0; font-size: 190px;
+               background: linear-gradient(180deg, #FFFFFF 10%, #FFECAA 45%, #F2C14E 78%, #D9963A 100%);
+               -webkit-background-clip: text; background-clip: text; color: transparent;
+               text-shadow: none; filter: drop-shadow(0 0 46px rgba(242,193,78,.55)); }
+  #cel .cols { position: absolute; left: 0; right: 0; top: 728px; display: flex; justify-content: center; gap: 0; }
+  #cel .col { padding: 0 52px; text-align: left; border-left: 1px solid rgba(255,236,170,.32); }
+  #cel .col:first-child { border-left: 0; }
+  #cel .lab { color: #FFE08A; display: flex; align-items: center; height: 54px; }
+  #cel .lab .badge { margin-left: 22px; letter-spacing: .01em; }
+  #cel .num { font-size: 66px; display: block; margin-top: 6px; }
+  #cel .unit { display: block; margin-top: 8px; font-size: 27px; }
+  #cel .note { margin-top: 8px; font-size: 22px; }
+
+  /* Frise de progression */
+  #rail { left: 140px; top: 918px; width: 1640px; height: 120px; display: flex; opacity: 0; }
+  .slot { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+  .bar { width: 44px; border-radius: 5px 5px 2px 2px; position: relative; overflow: hidden;
+         box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
+  .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+          background: linear-gradient(180deg, hsl(var(--h) 100% 82%), hsl(var(--h) 90% 56%)); }
+  .nm { margin-top: 10px; font-size: 14px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+        color: rgba(255,255,255,.38); white-space: nowrap; }
+
+  /* Intro / conclusion */
+  .center { left: 0; top: 0; width: 1920px; height: 1080px; text-align: center; display: none; }
+  .center > div, .center > img { position: absolute; left: 0; right: 0; margin: 0 auto; opacity: 0; }
+  .wordmark { font-weight: 700; letter-spacing: .46em; padding-left: .46em; }
+  .big { font-weight: 800; font-size: 150px; letter-spacing: -.02em; line-height: 1; }
+  .sub { font-size: 46px; font-weight: 500; color: rgba(255,255,255,.92); }
+  .line { font-size: 34px; font-weight: 500; color: rgba(255,255,255,.9); display: flex;
+          justify-content: center; align-items: center; gap: 22px; }
+  .line b { color: #FFE08A; font-weight: 700; }
+  #black { left: 0; top: 0; width: 1920px; height: 1080px; background: #000; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="1920" height="1080"></canvas>
+
+  <div id="brand" class="abs"><img src="../app/public/logo.svg" alt=""><span>ORBE</span></div>
+  <div id="tiers"></div>
+
+  <div id="cel" class="abs">
+    <div class="kicker abs">ABONNEMENT <b>18</b> / 18</div>
+    <div class="name disp abs">Celestia</div>
+    <div class="cols">
+      <div class="col abs" style="position:relative">
+        <div class="lab">Mensuel</div>
+        <span class="num" data-k="m"></span><span class="unit">/ mois</span>
+      </div>
+      <div class="col abs" style="position:relative">
+        <div class="lab">Annuel <span class="badge">−50&nbsp;%</span></div>
+        <span class="num" data-k="a"></span><span class="unit">/ an</span>
+        <div class="note"><b>6 mensualités payées</b> · 12 mois d’accès</div>
+      </div>
+      <div class="col abs" style="position:relative">
+        <div class="lab">Quota</div>
+        <span class="num" data-k="q"></span><span class="unit">de tokens / mois</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="rail" class="abs"></div>
+
+  <div id="intro" class="abs center">
+    <img id="i-logo" src="../app/public/logo.svg" alt="" style="top:250px;width:260px;height:260px">
+    <div id="i-word" class="wordmark" style="top:560px;font-size:92px">ORBE</div>
+    <div id="i-big" class="big disp" style="top:330px">18 abonnements</div>
+    <div id="i-sub" class="sub" style="top:520px">De Kilo à Celestia</div>
+    <div id="i-line" class="line" style="top:640px">Mensuel ou annuel <span class="badge" style="margin:0">−50&nbsp;%</span> sur l’annuel</div>
+    <div id="i-note" class="line" style="top:718px;font-size:28px"><span><b>6 mensualités payées</b> · 12 mois d’accès</span></div>
+  </div>
+
+  <div id="outro" class="abs center">
+    <img id="o-logo" src="../app/public/logo.svg" alt="" style="top:190px;width:300px;height:300px">
+    <div id="o-word" class="wordmark" style="top:540px;font-size:104px">ORBE</div>
+    <div id="o-l1" class="sub" style="top:712px">18 abonnements · De Kilo à Celestia</div>
+    <div id="o-l2" class="line" style="top:800px">Mensuel ou annuel <span class="badge" style="margin:0">−50&nbsp;%</span> sur l’annuel</div>
+  </div>
+
+  <div id="black" class="abs"></div>
+</div>
+
+<script>
+'use strict';
+/* ---------- Données officielles (ne pas modifier) ---------- */
+const TIERS = [
+  ['Kilo',     '5 €',         '30 €',         '4,9 millions',     4.9e6],
+  ['Méga',     '10 €',        '60 €',         '12 millions',      12e6],
+  ['Giga',     '25 €',        '150 €',        '36 millions',      36e6],
+  ['Téra',     '50 €',        '300 €',        '85 millions',      85e6],
+  ['Péta',     '100 €',       '600 €',        '190 millions',     190e6],
+  ['Exa',      '250 €',       '1 500 €',      '540 millions',     540e6],
+  ['Zetta',    '500 €',       '3 000 €',      '1,2 milliard',     1.2e9],
+  ['Yotta',    '1 000 €',     '6 000 €',      '2,6 milliards',    2.6e9],
+  ['Ronna',    '2 500 €',     '15 000 €',     '7,1 milliards',    7.1e9],
+  ['Quetta',   '5 000 €',     '30 000 €',     '15 milliards',     15e9],
+  ['Oméga',    '10 000 €',    '60 000 €',     '33 milliards',     33e9],
+  ['Ultima',   '25 000 €',    '150 000 €',    '89 milliards',     89e9],
+  ['Astral',   '50 000 €',    '300 000 €',    '190 milliards',    190e9],
+  ['Hyperion', '100 000 €',   '600 000 €',    '400 milliards',    400e9],
+  ['Zenith',   '250 000 €',   '1 500 000 €',  '1 100 milliards',  1.1e12],
+  ['Genesis',  '500 000 €',   '3 000 000 €',  '2 300 milliards',  2.3e12],
+  ['Nova',     '1 000 000 €', '6 000 000 €',  '4 700 milliards',  4.7e12],
+  ['Celestia', '2 500 000 €', '15 000 000 €', '12 000 milliards', 1.2e13],
+];
+const N = TIERS.length;
+const nb = s => s.replace(/ /g, '<i class="sp"></i>');  // espace insécable de largeur fixe
+
+/* ---------- Chronologie ---------- */
+const W = 1920, H = 1080, FPS = 30;
+const T_INTRO = 6, D = 3.8, T_CEL = 10, T_OUT = 7.6;
+const CEL0 = T_INTRO + (N - 1) * D, OUT0 = CEL0 + T_CEL, TOTAL = OUT0 + T_OUT;
+const IMPACT = 1.3;                                   // apparition de Celestia
+const tierStart = i => T_INTRO + i * D;
+window.VIDEO = { W, H, FPS, TOTAL, frames: Math.round(TOTAL * FPS) };
+
+/* ---------- Outils ---------- */
+const cl = x => x < 0 ? 0 : x > 1 ? 1 : x;
+const lerp = (a, b, p) => a + (b - a) * p;
+const smooth = p => { p = cl(p); return p * p * (3 - 2 * p); };
+const eoc = p => 1 - Math.pow(1 - cl(p), 3);
+const eoe = p => { p = cl(p); return p >= 1 ? 1 : 1 - Math.pow(2, -10 * p); };
+const eic = p => Math.pow(cl(p), 3);
+const eob = p => { p = cl(p); const c = 1.9; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hueOf = i => (195 + i * 210 / (N - 1)) % 360;   // cyan ORBE → or ORBE
+const LOG0 = Math.log10(TIERS[0][4]), LOG1 = Math.log10(TIERS[N - 1][4]);
+const quota01 = i => (Math.log10(TIERS[i][4]) - LOG0) / (LOG1 - LOG0);
+
+/* ---------- Construction du DOM ---------- */
+const $ = id => document.getElementById(id);
+const tiersEl = $('tiers'), railEl = $('rail');
+const panels = [];
+for (let i = 0; i < N - 1; i++) {
+  const [name, m, a, q] = TIERS[i];
+  const el = document.createElement('div');
+  el.className = 'tier abs'; el.style.setProperty('--h', hueOf(i).toFixed(1));
+  el.innerHTML = `
+    <div class="kicker abs" style="position:relative">ABONNEMENT <b>${String(i + 1).padStart(2, '0')}</b> / 18</div>
+    <div class="name disp abs" style="position:relative">${name}</div>
+    <div class="rows">
+      <div class="row abs" style="position:relative"><div class="lab">Mensuel</div>
+        <div class="val"><span class="num">${nb(m)}</span><span class="unit">/ mois</span></div></div>
+      <div class="row abs" style="position:relative"><div class="lab">Annuel</div>
+        <div class="val"><span class="num">${nb(a)}</span><span class="unit">/ an</span><span class="badge">−50&nbsp;%</span></div>
+        <div class="note"><b>6 mensualités payées</b> · 12 mois d’accès</div></div>
+      <div class="row abs" style="position:relative"><div class="lab">Quota</div>
+        <div class="val"><span class="num">${nb(q)}</span><span class="unit">de tokens / mois</span></div></div>
+    </div>`;
+  tiersEl.appendChild(el);
+  panels.push({ el, kicker: el.querySelector('.kicker'), name: el.querySelector('.name'),
+                rows: [...el.querySelectorAll('.row')], badge: el.querySelector('.badge') });
+}
+const cel = $('cel');
+cel.querySelector('[data-k=m]').innerHTML = nb(TIERS[N - 1][1]);
+cel.querySelector('[data-k=a]').innerHTML = nb(TIERS[N - 1][2]);
+cel.querySelector('[data-k=q]').innerHTML = nb(TIERS[N - 1][3]);
+const celParts = { kicker: cel.querySelector('.kicker'), name: cel.querySelector('.name'),
+                   cols: [...cel.querySelectorAll('.col')], badge: cel.querySelector('.badge') };
+const slots = TIERS.map((t, i) => {
+  const s = document.createElement('div'); s.className = 'slot'; s.style.setProperty('--h', hueOf(i).toFixed(1));
+  s.innerHTML = `<div class="bar" style="height:${Math.round(10 + 62 * quota01(i))}px"><div class="fill"></div></div><div class="nm">${t[0]}</div>`;
+  railEl.appendChild(s);
+  return { fill: s.querySelector('.fill'), nm: s.querySelector('.nm'), bar: s.querySelector('.bar') };
+});
+
+function show(el, u, t0, dur = 0.55, dy = 34) {
+  const e = eoc((u - t0) / dur);
+  el.style.opacity = e.toFixed(4);
+  el.style.transform = `translate3d(0,${((1 - e) * dy).toFixed(2)}px,0)`;
+}
+function pop(el, u, t0) {                              // échelle uniforme
+  const p = (u - t0) / 0.5, e = eob(p);
+  el.style.opacity = cl(p * 4).toFixed(4);
+  el.style.transform = `scale(${(0.5 + 0.5 * e).toFixed(4)})`;
+}
+function fadeIO(el, u, a, b, c, d, dy = 26) {          // entrée a→b, sortie c→d
+  const o = Math.min(eoc((u - a) / (b - a)), 1 - smooth((u - c) / (d - c)));
+  el.style.opacity = o.toFixed(4);
+  el.style.transform = `translate3d(0,${((1 - eoc((u - a) / (b - a))) * dy).toFixed(2)}px,0)`;
+}
+
+/* ---------- Scène 3D (canvas) ---------- */
+const cv = $('c'), ctx = cv.getContext('2d');
+const R0 = rng(20261120);
+const STARS = Array.from({ length: 1700 }, () => ({ x: (R0() * 2 - 1) * 2.6, y: (R0() * 2 - 1) * 1.5, z: R0(), b: 0.35 + R0() * 0.65, s: 0.7 + R0() * 1.3 }));
+const SPH = Array.from({ length: 6600 }, () => {       // points uniformes sur la sphère
+  const z = R0() * 2 - 1, a = R0() * Math.PI * 2, r = Math.sqrt(1 - z * z);
+  return { x: r * Math.cos(a), y: z, z: r * Math.sin(a), rj: 0.9 + R0() * 0.24, s: 0.8 + R0() * 1.5, w: R0() < 0.2 };
+});
+const DISC = Array.from({ length: 3200 }, () => ({ u: 1.28 + Math.pow(R0(), 1.7) * 0.95, a: R0() * Math.PI * 2, s: 0.7 + R0() * 1.3, h: (R0() - 0.5) * 0.05 }));
+const RAYS = Array.from({ length: 30 }, () => ({ a: R0() * Math.PI * 2, l: 2.6 + R0() * 2.6, w: 0.02 + R0() * 0.05, b: 0.4 + R0() * 0.6 }));
+const NEB = Array.from({ length: 6 }, () => ({ x: R0(), y: R0(), r: 420 + R0() * 520, dh: (R0() - 0.5) * 70, p: R0() * 6.28, b: 0.5 + R0() * 0.5 }));
+const grain = (() => { const g = document.createElement('canvas'); g.width = g.height = 256; const x = g.getContext('2d');
+  const d = x.createImageData(256, 256), r = rng(7); for (let i = 0; i < d.data.length; i += 4) { const v = r() * 255 | 0; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  x.putImageData(d, 0, 0); return g; })();
+
+const BOUNDS = [];
+for (let i = 0; i < N - 1; i++) BOUNDS.push(tierStart(i));
+BOUNDS.push(CEL0 + IMPACT, OUT0 + 0.9);
+function camZ(t) { let z = 0.012 * t; for (const b of BOUNDS) z += 0.3 * smooth((t - b) / 0.9 + 0.5); return z; }
+
+function scene(t) {
+  if (t < T_INTRO) return { k: 'intro', u: t, i: 0 };
+  if (t < CEL0) { const i = Math.min(N - 2, Math.floor((t - T_INTRO) / D)); return { k: 'tier', i, u: t - tierStart(i) }; }
+  if (t < OUT0) return { k: 'cel', i: N - 1, u: t - CEL0 };
+  return { k: 'outro', i: N - 1, u: t - OUT0 };
+}
+function hueAt(t) {                                    // teinte continue (non bouclée)
+  if (t < T_INTRO) return 195;
+  const f = Math.min(N - 1, (t - T_INTRO) / D), i = Math.floor(f), u = (f - i) * D;
+  const h = 195 + i * 210 / (N - 1), prev = 195 + Math.max(0, i - 1) * 210 / (N - 1);
+  return lerp(prev, h, smooth(u / 0.45));
+}
+function levelAt(t) { return cl((t - T_INTRO) / (CEL0 + IMPACT - T_INTRO)); }
+const P_TIER = [1480, 486], P_MID = [960, 440], P_CEL = [960, 232];
+function focusAt(t) {
+  if (t < T_INTRO) { const p = smooth((t - (T_INTRO - 0.7)) / 0.7); return [lerp(P_MID[0], P_TIER[0], p), lerp(P_MID[1], P_TIER[1], p)]; }
+  if (t < CEL0) return P_TIER;
+  if (t < OUT0) { const p = smooth((t - CEL0) / 1.0); return [lerp(P_TIER[0], P_CEL[0], p), lerp(P_TIER[1], P_CEL[1], p)]; }
+  const p = smooth((t - OUT0) / 0.9); return [lerp(P_CEL[0], P_MID[0], p), lerp(P_CEL[1], 340, p)];
+}
+
+function drawOrb(cx, cy, R, i, t, alpha, hue) {
+  if (alpha <= 0.002 || R < 0.5) return;
+  const isCel = i === N - 1, k17 = i / (N - 1);
+  const coreR = R * 0.52, sat = isCel ? 95 : 92;
+  const c = (l, a, dh = 0, s = sat) => `hsla(${(hue + dh + 360) % 360},${s}%,${l}%,${a})`;
+  const INC = 0.42, ROLL = -0.49;                       // même inclinaison que l'anneau du logo
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  // halo
+  let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 3.1);
+  g.addColorStop(0, c(62, 0.5 * alpha)); g.addColorStop(0.3, c(55, 0.16 * alpha)); g.addColorStop(1, c(50, 0));
+  ctx.fillStyle = g; ctx.fillRect(cx - R * 3.1, cy - R * 3.1, R * 6.2, R * 6.2);
+
+  // rayons (paliers élevés)
+  if (i >= 12) {
+    const n = Math.min(RAYS.length, 8 + (i - 12) * 4);
+    for (let j = 0; j < n; j++) {
+      const r = RAYS[j], len = R * r.l * (isCel ? 1.35 : 1), a = r.a + t * 0.04 * (j % 2 ? 1 : -1);
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(a);
+      const gr = ctx.createLinearGradient(coreR * 0.6, 0, len, 0);
+      gr.addColorStop(0, c(80, 0.11 * r.b * alpha * (0.7 + 0.3 * Math.sin(t * 0.9 + j)))); gr.addColorStop(1, c(70, 0));
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(coreR * 0.6, 0); ctx.lineTo(len, -len * r.w); ctx.lineTo(len, len * r.w); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+  }
+  if (isCel) {                                          // reflet anamorphique
+    ctx.save(); ctx.translate(cx, cy); ctx.scale(8, 0.06);
+    g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 1.3);
+    g.addColorStop(0, `rgba(255,244,214,${0.4 * alpha})`); g.addColorStop(1, 'rgba(255,220,150,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R * 1.3, 0, 6.2832); ctx.fill(); ctx.restore();
+  }
+
+  // repères d'anneau / disque
+  const cI = Math.cos(INC), sI = Math.sin(INC);
+  const plane = (x, zz, yy, roll) => {                  // point du plan orbital → écran
+    const y1 = yy * cI - zz * sI, z1 = yy * sI + zz * cI, cr = Math.cos(roll), sr = Math.sin(roll);
+    return [cx + (x * cr - y1 * sr), cy + (x * sr + y1 * cr), z1];
+  };
+  const nRing = isCel ? 7 : 1 + Math.floor(i / 3);
+  const ringR = k => R * (1.34 + (isCel ? 0.12 : 0.15) * k);
+  const ringRoll = k => ROLL + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (isCel ? 0.24 : 0.42);
+  const ringHalf = front => {
+    for (let k = 0; k < nRing; k++) {
+      const a = ringR(k), roll = ringRoll(k);
+      ctx.beginPath();
+      for (let s = 0; s <= 48; s++) {
+        const th = (front ? 0 : Math.PI) + s / 48 * Math.PI, p = plane(a * Math.cos(th), a * Math.sin(th), 0, roll);
+        s ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);
+      }
+      ctx.strokeStyle = c(78, (front ? 0.22 : 0.12) * alpha, k * 7); ctx.lineWidth = R * 0.05; ctx.stroke();
+      ctx.strokeStyle = c(86, (front ? 0.95 : 0.5) * alpha, k * 7); ctx.lineWidth = Math.max(1.4, R * 0.014); ctx.stroke();
+    }
+  };
+  const discHalf = front => {
+    if (i < 9) return;
+    const n = Math.min(DISC.length, Math.round(350 * Math.pow(DISC.length / 350, (i - 9) / 8)));
+    ctx.fillStyle = c(80, 1, -12);
+    for (let j = 0; j < n; j++) {
+      const d = DISC[j], th = d.a + t * 0.55 / Math.pow(d.u, 1.5), zz = Math.sin(th) * d.u;
+      if ((zz > 0) !== front) continue;
+      const p = plane(Math.cos(th) * d.u * R, zz * R, d.h * R, ROLL);
+      ctx.globalAlpha = alpha * (front ? 0.75 : 0.4) * (1.1 - (d.u - 1.28) * 0.75);
+      const s = d.s * (1.2 + R / 190); ctx.fillRect(p[0] - s / 2, p[1] - s / 2, s, s);
+    }
+    ctx.globalAlpha = 1;
+  };
+  discHalf(false); ringHalf(false);
+
+  // noyau
+  ctx.globalCompositeOperation = 'source-over';
+  const pulse = 1 + 0.012 * Math.sin(t * 2.1);
+  g = ctx.createRadialGradient(cx - coreR * 0.3, cy - coreR * 0.36, coreR * 0.05, cx, cy, coreR * pulse);
+  if (isCel) { g.addColorStop(0, `rgba(255,255,255,${alpha})`); g.addColorStop(0.45, `rgba(255,236,170,${alpha})`); g.addColorStop(0.8, `rgba(242,193,78,${alpha})`); g.addColorStop(1, `rgba(200,120,44,${alpha})`); }
+  else { g.addColorStop(0, c(93, alpha, 0, 100)); g.addColorStop(0.5, c(66, alpha)); g.addColorStop(1, c(27, alpha, -22, 78)); }
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, coreR * pulse, 0, 6.2832); ctx.fill();
+  ctx.globalCompositeOperation = 'lighter';
+
+  // nuage de particules (le quota grandit → la densité grandit)
+  const n = Math.round(260 * Math.pow(SPH.length / 260, k17));
+  const ay = t * 0.32 + i * 1.3, cy1 = Math.cos(ay), sy1 = Math.sin(ay), cx1 = Math.cos(0.38), sx1 = Math.sin(0.38);
+  const colA = c(78, 1), colW = isCel ? 'rgba(255,250,235,1)' : c(94, 1, 0, 100);
+  for (let pass = 0; pass < 2; pass++) {
+    ctx.fillStyle = pass ? colW : colA;
+    for (let j = 0; j < n; j++) {
+      const p = SPH[j]; if (p.w !== !!pass) continue;
+      const breathe = p.rj * (1 + 0.025 * Math.sin(t * 1.3 + j));
+      const x1 = p.x * cy1 + p.z * sy1, z1 = -p.x * sy1 + p.z * cy1;
+      const y2 = p.y * cx1 - z1 * sx1, z2 = p.y * sx1 + z1 * cx1;
+      const X = x1 * breathe * R, Y = y2 * breathe * R;
+      if (z2 < 0 && X * X + Y * Y < coreR * coreR) continue;
+      const pr = 1 / (1 - z2 * 0.22);
+      ctx.globalAlpha = alpha * (0.22 + 0.78 * (z2 + 1) / 2) * (X * X + Y * Y < coreR * coreR ? 0.4 : 1);
+      const s = p.s * pr * (0.95 + R / 330);
+      ctx.fillRect(cx + X * pr - s / 2, cy + Y * pr - s / 2, s, s);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ringHalf(true); discHalf(true);
+
+  // satellites
+  const dot = (p, r, col) => {
+    if (p[2] < 0 && Math.hypot(p[0] - cx, p[1] - cy) < coreR) return;
+    const gg = ctx.createRadialGradient(p[0], p[1], 0, p[0], p[1], r * 4);
+    gg.addColorStop(0, col(0.9 * alpha)); gg.addColorStop(1, col(0));
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(p[0], p[1], r * 4, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.2832); ctx.fill();
+  };
+  if (isCel) {                                          // les 17 paliers précédents gravitent autour de Celestia
+    for (let j = 0; j < N - 1; j++) {
+      const k = j % nRing, th = t * (0.5 - 0.035 * k) + j * 2.399, a = ringR(k), h = hueOf(j);
+      dot(plane(a * Math.cos(th), a * Math.sin(th), 0, ringRoll(k)), 3 + j * 0.2, al => `hsla(${h},95%,68%,${al})`);
+    }
+  } else for (let k = 0; k < nRing; k++) {
+    const th = t * (0.85 - 0.09 * k) + k * 1.9 + i, a = ringR(k);
+    dot(plane(a * Math.cos(th), a * Math.sin(th), 0, ringRoll(k)), Math.max(3, R * 0.03), al => c(80, al, k * 7));
+  }
+  ctx.restore();
+}
+
+function shock(cx, cy, R, p, hue, strength = 1) {
+  if (p <= 0 || p >= 1) return;
+  const e = eoc(p);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  ctx.strokeStyle = `hsla(${hue % 360},95%,80%,${(1 - p) * 0.7 * strength})`; ctx.lineWidth = 1 + 5 * (1 - p) * strength;
+  ctx.beginPath(); ctx.arc(cx, cy, R * (0.7 + 3.4 * e * strength), 0, 6.2832); ctx.stroke(); ctx.restore();
+}
+
+function renderAt(t) {
+  t = Math.max(0, Math.min(TOTAL, t));
+  const sc = scene(t), hue = hueAt(t), L = levelAt(t), [fx, fy] = focusAt(t);
+  const outK = sc.k === 'outro' ? smooth((sc.u - 0.9) / 1.2) : 0;   // retour au bleu ORBE en conclusion
+  const introK = sc.k === 'intro';
+
+  /* fond */
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+  let g = ctx.createRadialGradient(fx, fy, 0, fx, fy, 1500);
+  const bgL = 13 + 7 * L;
+  g.addColorStop(0, `hsl(${lerp(hue, 228, outK) % 360},${lerp(58, 48, outK)}%,${lerp(bgL, 19, outK)}%)`);
+  g.addColorStop(0.55, '#070a1c'); g.addColorStop(1, '#02030a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  /* nébuleuses */
+  ctx.globalCompositeOperation = 'lighter';
+  for (let j = 0; j < NEB.length; j++) {
+    const nb_ = NEB[j], x = nb_.x * W + Math.sin(t * 0.05 + nb_.p) * 120, y = nb_.y * H + Math.cos(t * 0.04 + nb_.p) * 80;
+    const a = (0.05 + 0.11 * L) * nb_.b * (1 - 0.6 * outK) * (introK ? 0.7 : 1);
+    g = ctx.createRadialGradient(x, y, 0, x, y, nb_.r);
+    g.addColorStop(0, `hsla(${(hue + nb_.dh + 360) % 360},85%,55%,${a})`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - nb_.r, y - nb_.r, nb_.r * 2, nb_.r * 2);
+  }
+
+  /* étoiles en profondeur + effet de distorsion aux transitions */
+  const z0 = camZ(t), dz = z0 - camZ(t - 1 / 60), nStar = Math.round(800 + 900 * L);
+  ctx.lineCap = 'round';
+  for (let j = 0; j < nStar; j++) {
+    const s = STARS[j]; let z = ((s.z - z0) % 1 + 1) % 1;
+    const zz = 0.06 + z * 0.94, sx = fx + s.x * 700 / zz, sy = fy + s.y * 700 / zz;
+    if (sx < -60 || sx > W + 60 || sy < -60 || sy > H + 60) continue;
+    const a = s.b * cl((1 - z) * 6) * cl(z * 30) * (0.45 + 0.55 / (zz * 4 + 0.4)) * (0.75 + 0.25 * L);
+    const z2 = zz + dz * 5.5, ex = fx + s.x * 700 / z2, ey = fy + s.y * 700 / z2, len = Math.hypot(sx - ex, sy - ey);
+    const size = Math.min(3.4, s.s * 0.55 / (zz + 0.25) + 0.5);
+    if (len > 2.5) {
+      ctx.strokeStyle = `hsla(${(hue + 20) % 360},80%,88%,${Math.min(1, a * 0.9)})`; ctx.lineWidth = size;
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    } else { ctx.fillStyle = `rgba(226,238,255,${Math.min(1, a)})`; ctx.fillRect(sx - size / 2, sy - size / 2, size, size); }
+  }
+
+  /* orbe */
+  let flash = 0, flashCol = '255,255,255';
+  if (sc.k === 'tier') {
+    const i = sc.i, u = sc.u;
+    const R = 104 + 122 * Math.pow(i / 16, 0.9);
+    const enter = eoe(u / 0.85), exit = eic((u - (D - 0.36)) / 0.36);
+    const s = (0.04 + 0.96 * enter) * (1 + 0.05 * u / D) * (1 + 3.2 * exit);
+    const a = cl(u / 0.25) * (1 - exit);
+    const cy = fy + Math.sin(t * 0.7) * 6;
+    shock(fx, cy, R, (u - 0.05) / 1.0, hue, 0.8 + 0.4 * i / 16);
+    drawOrb(fx, cy, R * s, i, t, a, hue);
+    flash = Math.max((0.1 + 0.12 * i / 16) * (1 - cl(u / 0.3)), (0.1 + 0.12 * i / 16) * cl((u - (D - 0.14)) / 0.14));
+    flashCol = null;
+  } else if (sc.k === 'intro') {
+    flash = 0.18 * cl((sc.u - (T_INTRO - 0.14)) / 0.14); flashCol = null;
+  } else if (sc.k === 'cel') {
+    const u = sc.u, v = u - IMPACT, R = 190;
+    if (v < 0) {                                        // suspense : trait de lumière
+      const p = eic(u / IMPACT), w = 30 + 900 * p;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.translate(fx, fy); ctx.scale(w / 40, 0.05 + 0.1 * p);
+      g = ctx.createRadialGradient(0, 0, 0, 0, 0, 40); g.addColorStop(0, `rgba(255,240,200,${0.3 + 0.7 * p})`); g.addColorStop(1, 'rgba(255,220,150,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 40, 0, 6.2832); ctx.fill(); ctx.restore();
+      flash = 0.95 * cl((u - (IMPACT - 0.1)) / 0.1);
+    } else {
+      const s = (0.05 + 0.95 * eoe(v / 1.1)) * (1 + 0.04 * v / (T_CEL - IMPACT));
+      for (let k = 0; k < 3; k++) shock(fx, fy, R, (v - k * 0.28) / 1.5, 45, 1.5);
+      drawOrb(fx, fy + Math.sin(t * 0.7) * 5, R * s, N - 1, t, 1, 45);
+      flash = 0.95 * Math.pow(1 - cl(v / 1.0), 2);
+    }
+    flashCol = '255,246,224';
+  } else {                                              // conclusion : Celestia se condense dans le logo
+    const u = sc.u, p = cl(u / 0.9);
+    if (p < 1) drawOrb(fx, fy, 190 * 1.04 * (1 - eic(p)), N - 1, t, 1, 45);
+    flash = u < 0.9 ? 0.9 * cl((u - 0.8) / 0.1) : 0.9 * Math.pow(1 - cl((u - 0.9) / 1.0), 2);
+    flashCol = '255,246,224';
+    if (u > 0.9) {                                      // halo derrière le logo
+      const a = smooth((u - 0.9) / 1.2);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      g = ctx.createRadialGradient(960, 340, 0, 960, 340, 620);
+      g.addColorStop(0, `rgba(127,209,255,${0.2 * a})`); g.addColorStop(0.4, `rgba(242,193,78,${0.07 * a})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+    }
+  }
+
+  /* voiles de lisibilité */
+  ctx.globalCompositeOperation = 'source-over';
+  const tierK = sc.k === 'tier' ? 1 : sc.k === 'cel' ? 1 - smooth(sc.u / 0.6) : sc.k === 'intro' ? smooth((sc.u - (T_INTRO - 0.5)) / 0.5) : 0;
+  if (tierK > 0) { g = ctx.createLinearGradient(0, 0, 1180, 0); g.addColorStop(0, `rgba(3,5,16,${0.72 * tierK})`); g.addColorStop(0.7, `rgba(3,5,16,${0.5 * tierK})`); g.addColorStop(1, 'rgba(3,5,16,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 1180, H); }
+  if (sc.k === 'cel' || (sc.k === 'outro' && sc.u < 1)) {
+    const a = sc.k === 'cel' ? smooth((sc.u - IMPACT) / 0.8) : 1 - smooth(sc.u / 0.9);
+    g = ctx.createLinearGradient(0, 380, 0, 500); g.addColorStop(0, 'rgba(3,5,16,0)'); g.addColorStop(1, `rgba(3,5,16,${0.86 * a})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 380, W, 120); ctx.fillStyle = `rgba(3,5,16,${0.86 * a})`; ctx.fillRect(0, 500, W, 580);
+  }
+  if (introK || sc.k === 'outro') { const a = introK ? 1 - smooth((sc.u - (T_INTRO - 0.6)) / 0.6) : smooth((sc.u - 0.9) / 1.0);
+    g = ctx.createRadialGradient(960, 520, 100, 960, 520, 900); g.addColorStop(0, `rgba(3,5,16,${0.5 * a})`); g.addColorStop(1, 'rgba(3,5,16,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  g = ctx.createLinearGradient(0, 860, 0, H); g.addColorStop(0, 'rgba(2,3,10,0)'); g.addColorStop(1, 'rgba(2,3,10,.78)');
+  ctx.fillStyle = g; ctx.fillRect(0, 860, W, 220);
+  g = ctx.createRadialGradient(W / 2, H / 2, 560, W / 2, H / 2, 1180); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.62)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  /* éclair + grain */
+  if (flash > 0.003) { ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = flashCol ? `rgba(${flashCol},${flash})` : `hsla(${hue % 360},90%,80%,${flash})`; ctx.fillRect(0, 0, W, H); }
+  const fr = Math.round(t * FPS), gr2 = rng(fr * 7919 + 13);
+  ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.035;
+  const ox = gr2() * 512 | 0, oy = gr2() * 512 | 0;
+  ctx.imageSmoothingEnabled = false;
+  for (let y = -oy; y < H; y += 512) for (let x = -ox; x < W; x += 512) ctx.drawImage(grain, x, y, 512, 512);
+  ctx.imageSmoothingEnabled = true; ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+
+  /* ---------- Textes ---------- */
+  // intro
+  const intro = $('intro'); intro.style.display = introK ? 'block' : 'none';
+  if (introK) { const u = sc.u;
+    fadeIO($('i-logo'), u, 0.35, 1.3, 2.75, 3.1, 0); fadeIO($('i-word'), u, 0.8, 1.6, 2.75, 3.1, 20);
+    fadeIO($('i-big'), u, 3.15, 3.75, 5.45, 5.8); fadeIO($('i-sub'), u, 3.4, 4.0, 5.45, 5.8);
+    fadeIO($('i-line'), u, 3.75, 4.35, 5.45, 5.8); fadeIO($('i-note'), u, 4.0, 4.6, 5.45, 5.8); }
+
+  // bandeau + frise
+  const hud = sc.k === 'intro' ? smooth((sc.u - (T_INTRO - 0.5)) / 0.5) : sc.k === 'outro' ? 1 - smooth(sc.u / 0.7) : 1;
+  $('brand').style.opacity = hud.toFixed(4); railEl.style.opacity = hud.toFixed(4);
+  for (let i = 0; i < N; i++) {
+    const st = i === N - 1 ? CEL0 + IMPACT : tierStart(i), p = eoc((t - st) / 0.6), cur = i === sc.i && sc.k !== 'intro' && p > 0;
+    const sl = slots[i];
+    sl.fill.style.height = (p * 100).toFixed(2) + '%';
+    sl.fill.style.opacity = cur || (sc.k === 'cel' && p > 0) || sc.k === 'outro' ? 1 : 0.5;
+    sl.bar.style.boxShadow = cur ? `inset 0 0 0 1px rgba(255,255,255,.2), 0 0 22px hsl(${hueOf(i)} 95% 62% / .9)` : '';
+    sl.nm.style.color = cur ? '#fff' : p > 0 ? 'rgba(255,255,255,.66)' : 'rgba(255,255,255,.38)';
+  }
+
+  // paliers
+  for (let i = 0; i < panels.length; i++) {
+    const P = panels[i], on = sc.k === 'tier' && sc.i === i;
+    P.el.style.display = on ? 'block' : 'none';
+    if (!on) continue;
+    const u = sc.u, ex = smooth((u - (D - 0.34)) / 0.3);
+    P.el.style.opacity = (1 - ex).toFixed(4); P.el.style.transform = `translate3d(${(-60 * ex).toFixed(2)}px,0,0)`;
+    show(P.kicker, u, 0.12, 0.45, 20);
+    show(P.name, u, 0.18, 0.6, 46); P.name.style.letterSpacing = (lerp(0.06, -0.02, eoc((u - 0.18) / 0.8))).toFixed(4) + 'em';
+    show(P.rows[0], u, 0.38); show(P.rows[1], u, 0.5); show(P.rows[2], u, 0.62);
+    pop(P.badge, u, 0.82);
+  }
+
+  // Celestia
+  cel.style.display = sc.k === 'cel' ? 'block' : 'none';
+  if (sc.k === 'cel') { const u = sc.u, ex = smooth((u - (T_CEL - 0.55)) / 0.45);
+    cel.style.opacity = (1 - ex).toFixed(4);
+    show(celParts.kicker, u, 0.35, 0.6, 16);
+    show(celParts.name, u, IMPACT + 0.3, 0.9, 40); celParts.name.style.letterSpacing = lerp(0.22, 0.02, eoc((u - IMPACT - 0.3) / 1.4)).toFixed(4) + 'em';
+    celParts.name.style.paddingLeft = celParts.name.style.letterSpacing;
+    show(celParts.cols[0], u, IMPACT + 1.0); show(celParts.cols[1], u, IMPACT + 1.25); show(celParts.cols[2], u, IMPACT + 1.5);
+    pop(celParts.badge, u, IMPACT + 1.75); }
+
+  // conclusion
+  const outro = $('outro'); outro.style.display = sc.k === 'outro' ? 'block' : 'none';
+  if (sc.k === 'outro') { const u = sc.u;
+    const lo = $('o-logo'), e = eoc((u - 0.95) / 1.1);
+    lo.style.opacity = cl((u - 0.95) / 0.5).toFixed(4); lo.style.transform = `scale(${(0.86 + 0.14 * e).toFixed(4)})`;   // échelle uniforme
+    show($('o-word'), u, 1.6, 0.8, 24); show($('o-l1'), u, 2.3, 0.7, 24); show($('o-l2'), u, 2.8, 0.7, 24);
+    $('black').style.opacity = smooth((u - (T_OUT - 1.0)) / 0.9).toFixed(4);
+  } else $('black').style.opacity = t < 0.5 ? (1 - smooth(t / 0.5)).toFixed(4) : 0;
+}
+window.renderAt = renderAt;
+
+/* ---------- Lecture en direct (hors capture) ---------- */
+window.ready = (async () => {
+  await Promise.all(['800 20px "Inter Display"', '700 20px "Inter Display"', '500 20px Inter', '600 20px Inter', '700 20px Inter', '800 20px Inter'].map(f => document.fonts.load(f)));
+  await Promise.all([...document.images].map(im => im.decode().catch(() => {})));
+  renderAt(0);
+})();
+if (!location.search.includes('capture')) {
+  const fit = () => { const s = Math.min(innerWidth / W, innerHeight / H); $('stage').style.transform = `scale(${s})`; };
+  addEventListener('resize', fit); fit();
+  const m = location.search.match(/t=([\d.]+)/);
+  window.ready.then(() => { if (m) return renderAt(+m[1]); const t0 = performance.now();
+    (function loop() { renderAt(((performance.now() - t0) / 1000) % (TOTAL + 1)); requestAnimationFrame(loop); })(); });
+}
+</script>
+</body>
+</html>
