@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>ORBE — NITRO · VORTEX · APETZ</title>
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block;width:100vw;height:100vh;object-fit:contain}</style>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script src="dots.js"></script>
+<script>
+/* Film promotionnel ORBE — 60 s, 1920×1080.
+   Rendu déterministe : render(t) dessine l'image de l'instant t (en secondes). */
+const W = 1920, H = 1080, DUR = 60;
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const FONT = '"Inter Display","Inter",sans-serif';
+const C = { blue: '#0a7bff', sky: '#58a8ff', nitro: '#35e3ff', vortex: '#8b6bff', apetz: '#ffcf7a', dim: '#9fb2d8' };
+const LABEL = 'ORBE  ·  MODÈLE IA';
+
+/* ---------- utilitaires ---------- */
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const prog = (t, a, b) => cl((t - a) / (b - a));
+const eo3 = x => 1 - Math.pow(1 - x, 3);
+const eo5 = x => 1 - Math.pow(1 - x, 5);
+const ei3 = x => x * x * x;
+const eio = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eoBack = x => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2);
+const io = (t, a, b, din = .6, dout = .4) => Math.min(eo3(prog(t, a, a + din)), 1 - ei3(prog(t, b - dout, b)));
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const gauss = r => (r() + r() + r() + r() - 2) * 1.2;
+function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
+
+const sprites = {};
+function sprite(col) {
+  if (sprites[col]) return sprites[col];
+  const s = document.createElement('canvas'); s.width = s.height = 128;
+  const g = s.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, rgba(col, 1)); gr.addColorStop(.18, rgba(col, .8)); gr.addColorStop(.45, rgba(col, .22)); gr.addColorStop(1, rgba(col, 0));
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  return sprites[col] = s;
+}
+function glow(x, y, r, col, a) { if (a <= 0 || r <= 0) return; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(sprite(col), x - r, y - r, 2 * r, 2 * r); }
+const add = () => ctx.globalCompositeOperation = 'lighter';
+const norm = () => { ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; };
+
+function setFont(o) { ctx.font = `${o.italic ? 'italic ' : ''}${o.weight || 500} ${o.size || 60}px ${FONT}`; ctx.letterSpacing = (o.ls || 0) + 'px'; }
+function tw(s, o) { ctx.save(); setFont(o); const w = ctx.measureText(s).width - (o.ls || 0); ctx.restore(); return w; }
+function T(s, x, y, o = {}) {
+  const a = o.alpha === undefined ? 1 : o.alpha; if (a <= 0.003) return;
+  const ls = o.ls || 0, align = o.align || 'center';
+  ctx.save(); ctx.globalAlpha = Math.min(1, a); setFont(o); ctx.textAlign = align; ctx.textBaseline = 'middle'; ctx.fillStyle = o.color || '#fff';
+  if (o.glow) { ctx.shadowColor = o.glow; ctx.shadowBlur = o.blur || 36; }
+  ctx.fillText(s, x + (align === 'center' ? ls / 2 : align === 'right' ? ls : 0), y); ctx.restore();
+}
+/* apparition : fondu + légère montée */
+function R(s, x, y, k, o = {}) { T(s, x, y + (1 - k) * 26, Object.assign({}, o, { alpha: k * (o.alpha === undefined ? 1 : o.alpha) })); }
+
+/* ---------- décor commun ---------- */
+const stars = (() => { const r = rng(7), a = []; for (let i = 0; i < 260; i++) a.push({ x: r() * W, y: r() * H, z: .2 + r() * .8, p: r() * 6.28 }); return a; })();
+function backdrop(t, tint, k = .2, cx = W / 2, cy = H / 2) {
+  norm(); ctx.fillStyle = '#03050b'; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 1100);
+  g.addColorStop(0, rgba(tint, k)); g.addColorStop(.55, rgba(tint, k * .22)); g.addColorStop(1, rgba(tint, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  add();
+  for (const s of stars) { const x = (s.x + t * 6 * s.z) % W, y = (s.y - t * 3 * s.z + H * 9) % H; glow(x, y, 2 + 4 * s.z, '#bcd4ff', (.18 + .22 * Math.sin(t * 1.3 + s.p)) * s.z); }
+  norm();
+}
+function flash(t, t0, col, dur = .7, peak = 1) { if (t < t0 || t > t0 + dur) return; norm(); ctx.globalAlpha = peak * Math.pow(1 - (t - t0) / dur, 2); ctx.fillStyle = col; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+function shade(x, y, rx, ry, a) { if (a <= 0) return; norm(); ctx.save(); ctx.translate(x, y); ctx.scale(rx, ry); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, `rgba(2,3,8,${a})`); g.addColorStop(.6, `rgba(2,3,8,${a * .7})`); g.addColorStop(1, 'rgba(2,3,8,0)'); ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); }
+
+/* ---------- logo ORBE ---------- */
+const mark = new Image(); mark.src = 'logo-mark.png';
+const DOTS = window.DOTS.slice().sort((a, b) => b[2] - a[2]);
+const CORE = DOTS[0];
+const ring = DOTS.slice(1).map(d => ({ d, ang: Math.atan2(d[1] - CORE[1], d[0] - CORE[0]), rad: Math.hypot(d[0] - CORE[0], d[1] - CORE[1]) })).sort((a, b) => (a.rad - b.rad) + (a.ang - b.ang) * .02);
+const post = [];
+function tile(cx, cy, S, a, markA = 1, crisp = false) {
+  if (a <= 0) return; norm();
+  if (!crisp) { const m = ctx.getTransform(); post.push(() => { ctx.setTransform(m); tile(cx, cy, S, a, markA, true); ctx.setTransform(1, 0, 0, 1, 0, 0); }); }
+  ctx.save(); ctx.globalAlpha = a; if (crisp) ctx.shadowBlur = 0; else {
+  ctx.shadowColor = rgba(C.blue, .7); ctx.shadowBlur = S * .28; }
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect(cx - S / 2, cy - S / 2, S, S, S * .19); ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.clip();
+  ctx.globalAlpha = a * markA; ctx.drawImage(mark, cx - S / 2, cy - S / 2, S, S); ctx.restore();
+}
+function disc(x, y, r, col, a) { if (a <= 0 || r <= 0) return; ctx.globalAlpha = Math.min(1, a); ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
+
+/* ---------- 0–8 s : introduction ---------- */
+function intro(t) {
+  const LX = 960, LY = 400, S = 340;
+  const z = ei3(prog(t, 7.25, 8)), sc = 1 + z * 46;
+  const px = LX + (CORE[0] - .5) * S, py = LY + (CORE[1] - .5) * S;
+  backdrop(t, C.blue, .16 + .1 * eo3(prog(t, .3, 3)), LX, LY);
+  ctx.save(); ctx.translate(px, py); ctx.scale(sc, sc); ctx.translate(-px, -py);
+  const tk = eo3(prog(t, 3.25, 3.95));          // la tuile blanche se matérialise
+  // halo et anneau d'impulsion
+  add(); glow(LX, LY, 520, C.blue, .28 * eo3(prog(t, .2, 2.5)));
+  const pr = prog(t, 3.3, 4.6); if (pr > 0 && pr < 1) { ctx.globalAlpha = (1 - pr) * .6; ctx.strokeStyle = C.sky; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(LX, LY, 170 + eo3(pr) * 520, 0, 6.2832); ctx.stroke(); }
+  norm();
+  tile(LX, LY, S * lerp(.86, 1, tk), tk, 1);
+  if (tk < 1) {
+    // les points du logo convergent en spirale
+    const ck = eoBack(prog(t, .35, 1.3));
+    add(); glow(px, py, CORE[2] * S * 3.2 * ck, C.blue, .7 * (1 - tk));
+    norm(); disc(px, py, CORE[2] * S * ck, C.blue, (1 - tk));
+    ring.forEach((o, i) => {
+      const p = eo3(prog(t, .8 + i * .036, 2.1 + i * .036)); if (p <= 0) return;
+      const a = o.ang - (1 - p) * 3.4, r = o.rad * (1 + (1 - p) * 7) * S;
+      const x = px + Math.cos(a) * r, y = py + Math.sin(a) * r, rr = o.d[2] * S * lerp(.3, 1, p);
+      add(); glow(x, y, rr * 3, C.sky, .5 * p * (1 - tk));
+      norm(); disc(x, y, rr, C.blue, p * (1 - tk));
+    });
+  }
+  norm();
+  const out = 1 - prog(t, 7.1, 7.5);
+  R('ORBE', LX, 672, eo3(prog(t, 3.9, 4.7)) * out, { size: 96, weight: 600, ls: 44, glow: rgba(C.blue, .8) });
+  // accroche
+  const ph = ['Trois modèles.', 'Trois expériences.', 'Une seule intelligence.'];
+  const st = [{ size: 46, weight: 400, color: '#b9c8ea' }, { size: 46, weight: 400, color: '#b9c8ea' }, { size: 46, weight: 600, color: '#ffffff' }];
+  const ws = ph.map((s, i) => tw(s, st[i])), gap = 34; let x = LX - (ws[0] + ws[1] + ws[2] + 2 * gap) / 2;
+  ph.forEach((s, i) => { R(s, x, 860, eo3(prog(t, 4.7 + i * .8, 5.4 + i * .8)) * out, Object.assign({ align: 'left' }, st[i])); x += ws[i] + gap; });
+  ctx.restore();
+}
+
+/* ---------- 8–22 s : NITRO ---------- */
+const warp = (() => { const r = rng(21), a = []; for (let i = 0; i < 760; i++) a.push({ th: r() * 6.2832, rho: 140 + r() * 1500, z: r() * 3000, w: .6 + r() * 1.6, c: r() < .3 ? '#ffffff' : (r() < .5 ? C.nitro : '#6fb6ff') }); return a; })();
+function streaks(u, vx, vy, boost) {
+  const dist = 2300 * u + 5200 * (1 - Math.exp(-u * 2.2)) + boost * 9000;
+  const speed = 2300 + 11400 * Math.exp(-u * 2.2) + boost * 30000, L = speed * .03;
+  add(); ctx.lineCap = 'round';
+  for (const s of warp) {
+    let z = ((s.z - dist) % 3000 + 3000) % 3000 + 40; const z2 = z + L;
+    const f = 520, x1 = vx + Math.cos(s.th) * s.rho * f / z, y1 = vy + Math.sin(s.th) * s.rho * f / z;
+    const x2 = vx + Math.cos(s.th) * s.rho * f / z2, y2 = vy + Math.sin(s.th) * s.rho * f / z2;
+    if ((x1 < -200 && x2 < -200) || (x1 > W + 200 && x2 > W + 200) || (y1 < -200 && y2 < -200) || (y1 > H + 200 && y2 > H + 200)) continue;
+    ctx.globalAlpha = cl((3040 - z) / 900) * cl(z / 300) * .75; ctx.strokeStyle = s.c; ctx.lineWidth = Math.min(5, s.w * 420 / z + .5);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  norm();
+}
+function speedText(s, x, y, vel, o) {
+  // traînées de vitesse derrière le texte
+  const n = 9; for (let k = n; k >= 1; k--) T(s, x - cl(vel * .011, -46, 46) * k, y, Object.assign({}, o, { alpha: (o.alpha === undefined ? 1 : o.alpha) * .1 * (1 - k / (n + 1)), glow: null, color: C.nitro }));
+  T(s, x, y, o);
+}
+function nitro(t) {
+  const u = t - 8, shot = u < 5 ? 0 : u < 9.5 ? 1 : 2;
+  const boost = ei3(prog(u, 13.2, 14));
+  backdrop(t, C.nitro, .13, shot === 1 ? 1500 : 960, 540);
+  streaks(u, shot === 1 ? 2700 : 960, shot === 1 ? 560 : 540, boost);
+  if (shot === 0) {
+    const xf = v => lerp(-1100, 960, eo5(prog(v, .3, 1.0))) + ei3(prog(v, 4.6, 5)) * 2600;
+    const x = xf(u), vel = (x - xf(u - .02)) / .02;
+    shade(960, 540, 900, 300, .5);
+    speedText('NITRO', x, 530, vel, { size: 310, weight: 800, italic: true, ls: 6, glow: rgba(C.nitro, .9), blur: 50 });
+    R(LABEL, 960, 318, io(u, 1.0, 4.6), { size: 26, weight: 500, ls: 10, color: C.nitro });
+    // trait lumineux
+    const lp = eo5(prog(u, .95, 1.5)), la = 1 - prog(u, 4.4, 4.7);
+    if (lp > 0 && la > 0) { const x0 = 520, x1 = lerp(520, 1400, lp); const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, rgba(C.nitro, 0)); g.addColorStop(1, rgba(C.nitro, 1)); ctx.globalAlpha = la; ctx.fillStyle = g; ctx.fillRect(x0, 722, x1 - x0, 4); add(); glow(x1, 724, 46, '#ffffff', la * (1 - prog(u, 1.5, 2.4) * .6)); norm(); }
+  } else if (shot === 1) {
+    const words = ['Rapide.', 'Fluide.', 'Réactif.'];
+    words.forEach((s, i) => {
+      const a = 5 + i * 1.5, b = a + 1.5; if (u < a || u >= b) return;
+      const xf = v => lerp(3000, 960, eo5(prog(v, a, a + .38))) - 60 * prog(v, a + .38, b - .2) - ei3(prog(v, b - .2, b)) * 2400;
+      const x = xf(u), vel = (x - xf(u - .02)) / .02;
+      shade(960, 540, 900, 300, .45);
+      speedText(s, x, 530, vel, { size: 250, weight: 700, italic: true, glow: rgba(C.nitro, .8), blur: 44 });
+      T('0' + (i + 1), 960, 790, { size: 30, weight: 500, ls: 8, color: C.nitro, alpha: io(u, a + .2, b, .3, .2) });
+    });
+    T('NITRO', 960, 930, { size: 28, weight: 700, italic: true, ls: 16, color: '#ffffff', alpha: io(u, 5.1, 9.5, .4, .15) * .85 });
+  } else {
+    const k = 1 + .05 * prog(u, 9.5, 14) + boost * 1.4, a = 1 - prog(u, 13.45, 13.9);
+    shade(960, 530, 900, 380, .5);
+    ctx.save(); ctx.translate(960, 540); ctx.scale(k, k); ctx.translate(-960, -540);
+    R('NITRO', 960, 440, eo5(prog(u, 9.5, 9.9)) * a, { size: 230, weight: 800, italic: true, ls: 6, glow: rgba(C.nitro, .9), blur: 46 });
+    const lp = eo5(prog(u, 9.8, 10.5)); ctx.globalAlpha = a * lp; ctx.fillStyle = C.nitro; ctx.fillRect(960 - 60 * lp, 580, 120 * lp, 3); ctx.globalAlpha = 1;
+    R('Conçu pour une expérience rapide.', 960, 668, eo3(prog(u, 10.1, 10.9)) * a, { size: 56, weight: 400, color: '#eaf8ff' });
+    ctx.restore();
+  }
+  flash(t, 13, C.nitro, .35, .35); flash(t, 17.5, C.nitro, .35, .35);
+}
+
+/* ---------- 22–38 s : VORTEX ---------- */
+const gal = (() => { const r = rng(99), a = []; for (let i = 0; i < 7200; i++) { const rad = 34 + 980 * Math.pow(r(), 1.55); a.push({ r: rad, a: Math.floor(r() * 3) * 2.0944 + 2.3 * Math.log(rad / 34) + gauss(r) * .34, w: .95 * Math.pow(120 / rad, .78), s: .5 + r() * 1.5, c: [C.vortex, '#5d74ff', '#d6ceff', C.vortex][Math.floor(r() * 4)], y: gauss(r) * 7, p: r() }); } return a; })();
+function vortexField(v, cx, cy, tilt, zoom, grow, col) {
+  const ct = Math.cos(tilt), stl = Math.sin(tilt), spin = v + col * col * 2.2;
+  add(); glow(cx, cy + 40 * zoom * (1 - col), 620 * zoom * grow * (1 - col * .8), C.vortex, .35);
+  for (const p of gal) {
+    const r = p.r * grow * (1 - col), ang = p.a + p.w * spin;
+    const x = Math.cos(ang) * r, z = Math.sin(ang) * r, down = (250 * Math.exp(-r / 150) + p.y) * (1 - col);
+    const depth = z * stl - down * ct, s = 1500 / (1500 + depth) * zoom;
+    const sx = cx + x * s, sy = cy + (z * ct + down * stl) * s;
+    if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
+    glow(sx, sy, (1.6 + p.s * 2.6) * s * (1 + col * 2), p.c, (.3 + .5 * p.p) * cl(1.25 - p.r / 1100) * cl(s));
+  }
+  glow(cx, cy + 250 * stl * zoom * (1 - col), lerp(150, 60, col) * zoom * grow, '#ffffff', .85);
+  glow(cx, cy + 250 * stl * zoom * (1 - col), 330 * zoom * grow * (1 - col * .7), '#b9a8ff', .5 + col * .4);
+  norm();
+}
+function vortex(t) {
+  const v = t - 22, shot = v < 6 ? 0 : v < 11 ? 1 : 2;
+  const col = ei3(prog(v, 15, 15.8)), end = 1 - prog(v, 15.75, 15.98);
+  let cx, cy, tilt, zoom;
+  if (shot === 0) { cx = 960; cy = 520; tilt = lerp(1.2, 1.08, prog(v, 0, 6)); zoom = lerp(1.0, 1.16, prog(v, 0, 6)); }
+  else if (shot === 1) { cx = lerp(1420, 1380, prog(v, 6, 11)); cy = 520; tilt = .72; zoom = lerp(1.3, 1.4, prog(v, 6, 11)); }
+  else { cx = lerp(lerp(500, 540, prog(v, 11, 16)), 960, eio(prog(v, 14.9, 15.8))); cy = lerp(520, 540, col); tilt = 1.0; zoom = lerp(1.3, 1.4, prog(v, 11, 16)); }
+  backdrop(t, C.vortex, .14 * end, cx, cy);
+  ctx.save(); ctx.globalAlpha = 1;
+  vortexField(v, cx, cy, tilt, zoom, eo3(prog(v, 0, 1.6)), col);
+  ctx.restore();
+  if (end < 1) { norm(); ctx.globalAlpha = 1 - end; ctx.fillStyle = '#03050b'; ctx.fillRect(0, 0, W, H); add(); glow(960, 540, 60 * end + 8, '#ffffff', 1); norm(); }
+  if (shot === 0) {
+    const k = eo5(prog(v, .9, 2.1)), a = k * (1 - prog(v, 5.6, 6));
+    shade(960, 530, 950, 330, .62 * a);
+    ctx.save(); ctx.translate(960, 530); const s = lerp(1.45, 1, k) + .05 * prog(v, 2, 6); ctx.scale(s, s);
+    T('VORTEX', 0, 0, { size: 250, weight: 800, ls: lerp(90, 34, k), alpha: a, glow: rgba(C.vortex, 1), blur: 60 });
+    ctx.restore();
+    R(LABEL, 960, 322, io(v, 2.0, 5.7), { size: 26, weight: 500, ls: 10, color: '#b9a8ff' });
+  } else if (shot === 1) {
+    const g = ctx.createLinearGradient(0, 0, 1200, 0); g.addColorStop(0, 'rgba(3,5,11,.86)'); g.addColorStop(.6, 'rgba(3,5,11,.6)'); g.addColorStop(1, 'rgba(3,5,11,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, 1200, H);
+    const o = { size: 112, weight: 700, align: 'left', glow: rgba(C.vortex, .7), blur: 40 }, out = 1 - prog(v, 10.6, 10.95);
+    R('VORTEX', 150, 372, eo3(prog(v, 6.15, 6.8)) * out, { size: 30, weight: 700, ls: 16, align: 'left', color: '#b9a8ff' });
+    ctx.globalAlpha = eo3(prog(v, 6.15, 6.8)) * out; ctx.fillStyle = C.vortex; ctx.fillRect(150, 410, 90 * eo5(prog(v, 6.2, 7)), 3); ctx.globalAlpha = 1;
+    R('Des performances', 144, 512, eo3(prog(v, 6.3, 7.1)) * out, o);
+    R('supérieures.', 144, 642, eo3(prog(v, 6.6, 7.4)) * out, o);
+  } else {
+    const g = ctx.createLinearGradient(W, 0, 720, 0); g.addColorStop(0, 'rgba(3,5,11,.86)'); g.addColorStop(.6, 'rgba(3,5,11,.6)'); g.addColorStop(1, 'rgba(3,5,11,0)'); ctx.globalAlpha = end * (1 - col); ctx.fillStyle = g; ctx.fillRect(720, 0, 1200, H); ctx.globalAlpha = 1;
+    const o = { size: 104, weight: 700, align: 'right', glow: rgba(C.vortex, .7), blur: 40 }, out = 1 - prog(v, 14.6, 15);
+    R('VORTEX', 1770, 372, eo3(prog(v, 11.15, 11.8)) * out, { size: 30, weight: 700, ls: 16, align: 'right', color: '#b9a8ff' });
+    ctx.globalAlpha = eo3(prog(v, 11.15, 11.8)) * out; ctx.fillStyle = C.vortex; const bw = 90 * eo5(prog(v, 11.2, 12)); ctx.fillRect(1770 - bw, 410, bw, 3); ctx.globalAlpha = 1;
+    R('Pensé pour les tâches', 1776, 512, eo3(prog(v, 11.3, 12.1)) * out, o);
+    R('exigeantes.', 1776, 642, eo3(prog(v, 11.6, 12.4)) * out, o);
+  }
+  flash(t, 28, '#b9a8ff', .45, .4); flash(t, 33, '#b9a8ff', .45, .4);
+}
+
+/* ---------- 38–52 s : APETZ ---------- */
+const sph = (() => { const a = [], n = 1500, r = rng(5); for (let i = 0; i < n; i++) { const y = 1 - 2 * (i + .5) / n, rr = Math.sqrt(1 - y * y), th = i * 2.39996; a.push({ x: Math.cos(th) * rr, y, z: Math.sin(th) * rr, s: .6 + r() * 1.2, c: r() < .35 ? '#ffffff' : (r() < .5 ? C.apetz : '#ffe9c2') }); } return a; })();
+const rays = (() => { const r = rng(13), a = []; for (let i = 0; i < 54; i++) a.push({ a: r() * 6.2832, l: .6 + r(), w: .01 + r() * .035, p: r() * 6.28, f: .4 + r() }); return a; })();
+const dust = (() => { const r = rng(77), a = []; for (let i = 0; i < 240; i++) a.push({ x: r() * W, y: r() * H, z: .2 + r() * .8, p: r() * 6.28 }); return a; })();
+const orbits = [{ n: 20, R: 1.62, tilt: 1.22, az: .5, sp: .5, sz: 9 }, { n: 30, R: 2.3, tilt: 1.3, az: -.45, sp: -.32, sz: 12 }];
+const letterX = (() => { const o = { size: 250, weight: 700 }, ls = 70, s = 'APETZ'; let ws = [...s].map(ch => tw(ch, o)), tot = ws.reduce((a, b) => a + b, 0) + ls * (s.length - 1), x = -tot / 2, out = []; ws.forEach((w, i) => { out.push({ ch: s[i], x: x + w / 2 }); x += w + ls; }); return out; });
+let LX = null;
+const tcv = document.createElement('canvas'); tcv.width = W; tcv.height = 400; const tctx = tcv.getContext('2d');
+function apetz(t) {
+  const w = t - 38, mv = eio(prog(w, 5.4, 7)), ex = ei3(prog(w, 13.2, 14));
+  const cx = 960, cy = lerp(540, 388, mv), Rr = lerp(300, 226, mv) * eoBack(prog(w, 0, 1.3)) * (1 + ex * 7);
+  backdrop(t, C.apetz, .12, cx, cy);
+  add();
+  for (const d of dust) { const y = ((d.y - w * 26 * d.z) % H + H) % H; glow(d.x + Math.sin(w * .5 + d.p) * 30, y, 3 + 7 * d.z, C.apetz, (.2 + .25 * Math.sin(w + d.p)) * d.z); }
+  // rayons de lumière
+  const ra = eo3(prog(w, .2, 2)) * (1 - ex);
+  for (const r of rays) {
+    const a = r.a + w * .05, len = Rr * (2.2 + 1.8 * r.l * (.6 + .4 * Math.sin(w * r.f + r.p)));
+    const g = ctx.createLinearGradient(cx, cy, cx + Math.cos(a) * len, cy + Math.sin(a) * len);
+    g.addColorStop(0, rgba(C.apetz, .0)); g.addColorStop(.25, rgba(C.apetz, .16)); g.addColorStop(1, rgba(C.apetz, 0));
+    ctx.globalAlpha = ra; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a - r.w) * len, cy + Math.sin(a - r.w) * len); ctx.lineTo(cx + Math.cos(a + r.w) * len, cy + Math.sin(a + r.w) * len); ctx.fill();
+  }
+  glow(cx, cy, Rr * 3.1, C.apetz, .34 * (1 - ex)); glow(cx, cy, Rr * 1.5, '#fff3dc', .3 * (1 - ex));
+  // onde de choc
+  const sw = prog(w, 0, 1.8); if (sw > 0 && sw < 1) { ctx.globalAlpha = (1 - sw) * .8; ctx.strokeStyle = '#fff1d6'; ctx.lineWidth = 4 * (1 - sw) + 1; ctx.beginPath(); ctx.arc(cx, cy, eo3(sw) * 1300, 0, 6.2832); ctx.stroke(); }
+  // sphère de points
+  const ry = w * .32, cyy = Math.cos(ry), syy = Math.sin(ry), tx = .38, ctx_ = Math.cos(tx), stx = Math.sin(tx), F = 1300;
+  const fade = 1 - ex * .8;
+  for (const p of sph) {
+    const x = p.x * cyy + p.z * syy, z0 = -p.x * syy + p.z * cyy, y = p.y * ctx_ - z0 * stx, z = p.y * stx + z0 * ctx_;
+    const s = F / (F - z * Rr * .9); glow(cx + x * Rr * s, cy + y * Rr * s, (3 + p.s * 3.4) * s * (Rr / 280 + .3), p.c, (.16 + .62 * cl((z + 1) / 2)) * fade);
+  }
+  // anneaux de points en orbite (écho du logo)
+  for (const o of orbits) for (let i = 0; i < o.n; i++) {
+    const a = i / o.n * 6.2832 + w * o.sp, rr = o.R * Rr, px = Math.cos(a) * rr, pz = Math.sin(a) * rr;
+    const y1 = -pz * Math.cos(o.tilt), z1 = pz * Math.sin(o.tilt), x2 = px * Math.cos(o.az) - y1 * Math.sin(o.az), y2 = px * Math.sin(o.az) + y1 * Math.cos(o.az);
+    const s = F / (F - z1 * .9), sz = o.sz * (.35 + .65 * Math.pow(.5 + .5 * Math.sin(i / o.n * 6.2832 * 2 + 1), 1.5)) * s * (Rr / 260);
+    const al = eo3(prog(w, .6 + i * .02, 1.8 + i * .02)) * (.45 + .55 * cl((z1 / rr + 1) / 2)) * fade;
+    glow(cx + x2 * s, cy + y2 * s, sz * 3.4, C.apetz, al * .8); glow(cx + x2 * s, cy + y2 * s, sz * 1.5, '#ffffff', al);
+  }
+  norm();
+  // nom, lettre par lettre
+  if (!LX) LX = letterX();
+  const ny = lerp(540, 742, mv), ns = lerp(1, .72, mv), out = 1 - prog(w, 13.1, 13.5);
+  const na = eo3(prog(w, 2.0, 3.2)) * out;
+  shade(960, ny, 900 * ns, 260 * ns, .66 * na * (1 - mv * .4));
+  ctx.save(); ctx.translate(960, ny); ctx.scale(ns, ns);
+  LX.forEach((l, i) => { const k = eo3(prog(w, 2.0 + i * .16, 2.9 + i * .16)); T(l.ch, l.x, (1 - k) * 46, { size: 250, weight: 700, alpha: k * out, glow: rgba(C.apetz, .95), blur: 56 }); });
+  ctx.restore();
+  // balayage lumineux sur le nom
+  const sp = prog(w, 3.5, 5.0);
+  if (sp > 0 && sp < 1) {
+    tctx.globalCompositeOperation = 'source-over'; tctx.clearRect(0, 0, W, 400); tctx.save(); tctx.font = `700 250px ${FONT}`; tctx.textAlign = 'center'; tctx.textBaseline = 'middle'; tctx.fillStyle = '#fff';
+    LX.forEach(l => tctx.fillText(l.ch, 960 + l.x, 200)); tctx.restore();
+    tctx.globalCompositeOperation = 'source-in'; const bx = lerp(100, 1820, eio(sp)), g = tctx.createLinearGradient(bx - 220, 0, bx + 220, 0); g.addColorStop(0, 'rgba(255,214,140,0)'); g.addColorStop(.5, 'rgba(255,226,170,1)'); g.addColorStop(1, 'rgba(255,214,140,0)'); tctx.fillStyle = g; tctx.fillRect(0, 0, W, 400);
+    ctx.globalAlpha = .9; ctx.drawImage(tcv, 0, ny - 200); ctx.globalAlpha = 1;
+  }
+  R(LABEL, 960, 962, io(w, 3.0, 5.4, .7, .5), { size: 26, weight: 500, ls: 10, color: C.apetz });
+  R('Le troisième modèle d’ORBE.', 960, 900, io(w, 7.1, 10.3, .8, .4), { size: 52, weight: 400, color: '#fff4e2' });
+  R('Une expérience à part entière.', 960, 900, io(w, 10.5, 13.3, .8, .4), { size: 52, weight: 400, color: '#fff4e2' });
+}
+
+/* ---------- 52–60 s : conclusion ---------- */
+function outro(t) {
+  const o = t - 52, LXc = 960, LYc = 372, S = 300;
+  backdrop(t, C.blue, .15, 960, o < 3.8 ? 540 : LYc);
+  // les trois noms, simultanément
+  const names = [{ s: 'NITRO', c: C.nitro, italic: true }, { s: 'VORTEX', c: C.vortex }, { s: 'APETZ', c: C.apetz }];
+  const st = n => ({ size: 124, weight: 700, italic: !!n.italic, ls: 8 });
+  const ws = names.map(n => tw(n.s, st(n))), dash = 150, tot = ws[0] + ws[1] + ws[2] + 2 * dash;
+  const k = eo5(prog(o, .05, .8)), cv2 = eio(prog(o, 3.0, 3.85)), a = k * (1 - prog(o, 3.0, 3.4));
+  if (o < 3.9) {
+    let x = 960 - tot / 2;
+    R('LES MODÈLES ORBE', 960, 372, eo3(prog(o, .5, 1.2)) * (1 - prog(o, 2.9, 3.3)), { size: 26, weight: 500, ls: 12, color: C.dim });
+    names.forEach((n, i) => {
+      const mx = x + ws[i] / 2, px = lerp(mx, 960, cv2), sc = lerp(1.14, 1, k) * (1 - cv2 * .12);
+      add(); glow(px, 540, 430 - 200 * cv2, n.c, .2 * k + .5 * Math.sin(cv2 * 3.1416)); norm();
+      ctx.save(); ctx.translate(mx, 540); ctx.scale(sc, sc);
+      T(n.s, 0, 0, Object.assign(st(n), { alpha: a, glow: rgba(n.c, 1), blur: 46 }));
+      const bw = ws[i] * eo5(prog(o, .3, 1.2)); ctx.globalAlpha = a; ctx.fillStyle = n.c; ctx.fillRect(-bw / 2, 96, bw, 4);
+      ctx.restore(); ctx.globalAlpha = 1;
+      if (i < 2) T('—', x + ws[i] + dash / 2, 536, { size: 70, weight: 300, color: '#6c7ba0', alpha: a });
+      x += ws[i] + dash;
+    });
+  }
+  // fusion vers le logo
+  const f = prog(o, 3.3, 4.3);
+  if (f > 0 && f < 1) { add(); glow(960, lerp(540, LYc, eio(f)), 260 + 300 * f, C.blue, Math.sin(f * 3.1416) * .9); glow(960, lerp(540, LYc, eio(f)), 120, '#ffffff', Math.sin(f * 3.1416) * .8); norm(); }
+  const lk = prog(o, 3.85, 4.7);
+  if (lk > 0) {
+    add(); glow(LXc, LYc, 520, C.blue, .3 * eo3(lk) * (1 + .12 * Math.sin(o * 2)));
+    const pr = prog(o, 3.9, 5.4); if (pr < 1) { ctx.globalAlpha = (1 - pr) * .6; ctx.strokeStyle = C.sky; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(LXc, LYc, 150 + eo3(pr) * 620, 0, 6.2832); ctx.stroke(); }
+    norm();
+    tile(LXc, LYc, S * lerp(.8, 1, eoBack(lk)), eo3(lk));
+    R('ORBE', LXc, 628, eo3(prog(o, 4.2, 5.0)), { size: 92, weight: 600, ls: 44, glow: rgba(C.blue, .8) });
+    R('Choisissez votre puissance.', 960, 800, eo3(prog(o, 4.7, 5.5)), { size: 54, weight: 400, color: '#c9d6f2' });
+    R('Découvrez ORBE.', 960, 884, eo3(prog(o, 5.4, 6.2)), { size: 54, weight: 700, color: '#ffffff', glow: rgba(C.blue, .9), blur: 30 });
+  }
+  const fo = prog(o, 7.35, 7.95); if (fo > 0) { norm(); ctx.globalAlpha = fo; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+}
+
+/* ---------- finition : halo lumineux + vignette ---------- */
+const bcv = document.createElement('canvas'); bcv.width = 480; bcv.height = 270; const bctx = bcv.getContext('2d');
+function finish(t) {
+  bctx.filter = 'blur(7px)'; bctx.globalCompositeOperation = 'copy'; bctx.drawImage(cv, 0, 0, 480, 270);
+  add(); ctx.globalAlpha = .42; ctx.drawImage(bcv, 0, 0, W, H); norm();
+  while (post.length) post.shift()();
+  const g = ctx.createRadialGradient(W / 2, H / 2, 520, W / 2, H / 2, 1180); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.62)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+
+function render(t) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); norm();
+  if (t < 8) intro(t); else if (t < 22) nitro(t); else if (t < 38) vortex(t); else if (t < 52) apetz(t); else outro(t);
+  finish(t);
+  flash(t, 8, '#bfe9ff', .7, 1); flash(t, 22, '#cfc4ff', .8, 1); flash(t, 38, '#fff0d2', .9, 1); flash(t, 52, '#ffffff', .8, 1);
+  const fi = 1 - prog(t, 0, .6); if (fi > 0) { ctx.globalAlpha = fi; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+}
+window.render = render;
+window.ready = Promise.all([mark.decode(), document.fonts.load(`700 60px ${FONT}`), document.fonts.load(`italic 800 60px ${FONT}`)]).then(() => true);
+
+/* lecture en direct (aperçu dans un navigateur) — désactivée pendant la capture (?capture) */
+if (!location.search.includes('capture')) window.ready.then(() => { const t0 = performance.now(); (function loop() { render(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })(); });
+</script>
+</html>
